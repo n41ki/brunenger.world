@@ -12,10 +12,10 @@ interface User  { username: string; avatar: string; puntos: number; nivel: numbe
 interface Stream { isLive: boolean; viewers?: number; title?: string }
 
 const CARDS = [
-  { href: "/dashboard/shop",      icon: ShoppingBag, label: "Tienda",   desc: "Canjea tus puntos"      },
-  { href: "/dashboard/rankings",  icon: Trophy,      label: "Rankings", desc: "Top comunidad"          },
-  { href: "/dashboard/giveaways", icon: Gift,        label: "Sorteos",  desc: "Participa y gana"       },
-  { href: "/dashboard/stream",    icon: Tv,          label: "Stream",   desc: "Ve el stream en vivo"   },
+  { href: "/dashboard/shop",      icon: ShoppingBag, label: "Tienda",   desc: "Canjea tus puntos"    },
+  { href: "/dashboard/rankings",  icon: Trophy,      label: "Rankings", desc: "Top comunidad"        },
+  { href: "/dashboard/giveaways", icon: Gift,        label: "Sorteos",  desc: "Participa y gana"     },
+  { href: "/dashboard/stream",    icon: Tv,          label: "Stream",   desc: "Ve el stream en vivo" },
 ];
 
 export default function DashboardPage() {
@@ -28,30 +28,38 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="max-w-5xl mx-auto px-5 py-12">
+    <div style={{ padding: "32px 28px", maxWidth: "1000px" }}>
 
-      {/* Welcome row */}
+      {/* Welcome */}
       <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 mb-10">
-        <div className="flex items-center gap-4">
+        style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "16px", marginBottom: "32px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
           {user?.avatar && (
-            <div className="relative">
-              <Image src={user.avatar} alt={user.username} width={46} height={46}
-                className="rounded-full border border-[rgba(255,255,255,0.08)]" />
-              {stream.isLive && <span className="live-dot absolute -bottom-0.5 -right-0.5 border-2 border-[#0B0B0B]" style={{ width:"8px", height:"8px" }} />}
+            <div style={{ position: "relative" }}>
+              <Image src={user.avatar} alt={user.username} width={48} height={48}
+                style={{ borderRadius: "50%", border: "1.5px solid var(--border2)" }} />
+              {stream.isLive && <span className="live-dot" style={{ position: "absolute", bottom: "0", right: "0", width: "10px", height: "10px", border: "2px solid var(--bg)" }} />}
             </div>
           )}
           <div>
-            <p className="label mb-0.5">Bienvenido de vuelta</p>
-            <h1 className="display text-[28px] tracking-widest text-white">{user?.username || "..."}</h1>
+            <p className="label" style={{ marginBottom: "3px" }}>Bienvenido de vuelta</p>
+            <h1 style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "26px", color: "var(--t1)", lineHeight: 1.1 }}>
+              {user?.username || "..."}
+            </h1>
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl card">
+        <div style={{
+          display: "flex", alignItems: "center", gap: "10px",
+          padding: "12px 18px", borderRadius: "12px",
+          background: "var(--orange-bg)", border: "1px solid var(--orange-bd)"
+        }}>
           <span className="bolt"><LightningIcon size={16} /></span>
           <div>
-            <p className="label" style={{ fontSize: "10px" }}>PUNTOS</p>
-            <p className="display text-[22px] tracking-widest accent">{(user?.puntos || 0).toLocaleString()}</p>
+            <p style={{ fontSize: "10px", color: "var(--orange)", fontWeight: 700, letterSpacing: "0.1em" }}>PUNTOS</p>
+            <p style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "22px", color: "var(--orange)", lineHeight: 1 }}>
+              {(user?.puntos || 0).toLocaleString()}
+            </p>
           </div>
         </div>
       </motion.div>
@@ -59,15 +67,18 @@ export default function DashboardPage() {
       {/* Live banner */}
       {stream.isLive && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className="flex items-center justify-between px-5 py-3.5 rounded-xl mb-6"
-          style={{ background: "rgba(249,115,22,0.06)", border: "1px solid rgba(249,115,22,0.18)" }}>
-          <div className="flex items-center gap-3">
+          style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "14px 18px", borderRadius: "12px", marginBottom: "24px",
+            background: "var(--orange-bg)", border: "1px solid var(--orange-bd)"
+          }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <span className="live-dot" />
-            <span className="text-[13px] font-semibold accent tracking-wide">EN VIVO</span>
-            {stream.title && <span className="text-[13px] text-[#444] hidden sm:block truncate max-w-xs">— {stream.title}</span>}
+            <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--orange)", letterSpacing: "0.06em" }}>EN VIVO</span>
+            {stream.title && <span style={{ fontSize: "13px", color: "var(--t4)" }}>— {stream.title}</span>}
           </div>
           <Link href="/dashboard/stream">
-            <button className="btn btn-orange text-[12px] px-4 py-1.5">
+            <button className="btn btn-primary btn-sm">
               <Play size={11} /> Ver stream
             </button>
           </Link>
@@ -75,35 +86,35 @@ export default function DashboardPage() {
       )}
 
       {/* Nav cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "12px", marginBottom: "32px" }}>
         {CARDS.map((c, i) => (
           <motion.div key={c.href} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
-            <Link href={c.href}>
-              <div className="card p-5 cursor-pointer group">
-                <c.icon size={20} className="accent mb-3 group-hover:scale-110 transition-transform" />
-                <p className="font-semibold text-white text-[13px] mb-0.5">{c.label}</p>
-                <p className="text-[12px] text-[#444]">{c.desc}</p>
+            <Link href={c.href} style={{ textDecoration: "none" }}>
+              <div className="card card-hover" style={{ padding: "20px", cursor: "pointer" }}>
+                <c.icon size={20} style={{ color: "var(--orange)", marginBottom: "12px" }} />
+                <p style={{ fontWeight: 600, color: "var(--t1)", fontSize: "13px", marginBottom: "3px" }}>{c.label}</p>
+                <p style={{ fontSize: "12px", color: "var(--t3)" }}>{c.desc}</p>
               </div>
             </Link>
           </motion.div>
         ))}
       </div>
 
-      <div className="hr mb-8" />
+      <div className="hr" style={{ marginBottom: "28px" }} />
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "12px" }}>
         {[
           { icon: TrendingUp,    v: "0h", l: "Watch time"       },
           { icon: MessageSquare, v: "0",  l: "Mensajes en chat" },
           { icon: Gift,          v: "0",  l: "Items canjeados"  },
         ].map((s, i) => (
           <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 + i * 0.05 }}
-            className="card flex items-center gap-4 px-5 py-4">
-            <s.icon size={18} className="text-[#2A2A2A]" />
+            className="card" style={{ display: "flex", alignItems: "center", gap: "14px", padding: "18px 20px" }}>
+            <s.icon size={18} style={{ color: "var(--t4)", flexShrink: 0 }} />
             <div>
-              <p className="display text-[22px] tracking-widest text-white">{s.v}</p>
-              <p className="text-[11px] text-[#444]">{s.l}</p>
+              <p style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "22px", color: "var(--t1)", lineHeight: 1 }}>{s.v}</p>
+              <p style={{ fontSize: "11px", color: "var(--t3)", marginTop: "3px" }}>{s.l}</p>
             </div>
           </motion.div>
         ))}

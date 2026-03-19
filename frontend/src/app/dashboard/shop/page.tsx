@@ -53,31 +53,40 @@ export default function ShopPage() {
   const pts = user?.puntos || 0;
 
   return (
-    <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "40px 20px" }}>
+    <div style={{ padding: "32px 28px", maxWidth: "1100px" }}>
 
       {/* Header */}
       <motion.div className="anim-0" style={{ marginBottom: "32px" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", flexWrap: "wrap" }}>
           <div>
-            <span className="label" style={{ display: "block", marginBottom: "4px" }}>Recompensas</span>
-            <h1 className="display" style={{ fontSize: "42px", color: "var(--t1)" }}>TIENDA</h1>
+            <p className="label" style={{ marginBottom: "6px" }}>Recompensas</p>
+            <h1 style={{
+              fontFamily: "'Poppins', sans-serif", fontWeight: 900,
+              fontSize: "36px", lineHeight: 1.1, color: "var(--t1)"
+            }}>Tienda</h1>
           </div>
           {/* Points display */}
-          <div className="card" style={{ padding: "14px 20px", display: "flex", alignItems: "center", gap: "10px" }}>
-            <span className="bolt"><LightningIcon size={16} /></span>
+          <div style={{
+            display: "flex", alignItems: "center", gap: "12px",
+            padding: "14px 20px", borderRadius: "14px",
+            background: "var(--orange-bg)", border: "1px solid var(--orange-bd)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)"
+          }}>
+            <span className="bolt"><LightningIcon size={18} /></span>
             <div>
-              <p className="label" style={{ fontSize: "10px", marginBottom: "2px" }}>TUS PUNTOS</p>
-              <p className="display" style={{ fontSize: "26px", color: "var(--orange)" }}>{pts.toLocaleString()}</p>
+              <p className="label" style={{ fontSize: "10px", marginBottom: "2px", color: "var(--orange)" }}>TUS PUNTOS</p>
+              <p style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "24px", color: "var(--orange)", lineHeight: 1 }}>
+                {pts.toLocaleString()}
+              </p>
             </div>
           </div>
         </div>
       </motion.div>
 
-      {/* Filters bar */}
+      {/* Filters */}
       <motion.div className="anim-1" style={{
         display: "flex", gap: "10px", marginBottom: "28px", flexWrap: "wrap", alignItems: "center"
       }}>
-        {/* Search */}
         <div style={{ flex: 1, minWidth: "200px", position: "relative" }}>
           <Search size={14} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--t4)" }} />
           <input
@@ -86,7 +95,6 @@ export default function ShopPage() {
             style={{ paddingLeft: "36px" }}
           />
         </div>
-        {/* Sort */}
         <div className="tabs" style={{ width: "auto", flexShrink: 0 }}>
           <button className={`tab${sort === "asc" ? " active" : ""}`} onClick={() => setSort("asc")}>
             Menor precio
@@ -101,13 +109,15 @@ export default function ShopPage() {
       {loading ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: "16px" }}>
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} style={{ height: "260px", borderRadius: "16px", background: "var(--bg2)", animation: "pulse 1.5s infinite" }} />
+            <div key={i} style={{ height: "280px", borderRadius: "18px", background: "var(--bg2)", animation: "pulse 1.5s infinite" }} />
           ))}
         </div>
       ) : filtered.length === 0 ? (
         <div style={{ textAlign: "center", padding: "80px 0", color: "var(--t4)" }}>
           <ShoppingBag size={40} style={{ margin: "0 auto 16px" }} />
-          <p className="display" style={{ fontSize: "22px" }}>{items.length === 0 ? "SIN ITEMS" : "SIN RESULTADOS"}</p>
+          <p style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: "20px" }}>
+            {items.length === 0 ? "Sin items" : "Sin resultados"}
+          </p>
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: "16px" }}>
@@ -122,7 +132,7 @@ export default function ShopPage() {
                 transition={{ delay: i * 0.04 }}
               >
                 {/* Image */}
-                <div style={{ position: "relative", height: "148px", background: "var(--bg2)", overflow: "hidden" }}>
+                <div style={{ position: "relative", height: "160px", background: "var(--bg2)", overflow: "hidden" }}>
                   {item.imagen
                     ? <Image src={item.imagen} alt={item.nombre} fill style={{ objectFit: "cover" }} />
                     : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
@@ -130,20 +140,21 @@ export default function ShopPage() {
                       </div>
                   }
                   {/* Gradient overlay */}
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, var(--bg1), transparent 60%)" }} />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, var(--bg1) 0%, transparent 55%)" }} />
                   {/* Cant-afford overlay */}
                   {!canAfford && item.disponible && (
                     <div style={{
                       position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
-                      background: "rgba(0,0,0,0.45)", backdropFilter: "blur(2px)"
+                      background: "rgba(0,0,0,0.5)", backdropFilter: "blur(3px)"
                     }}>
-                      <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--t3)", letterSpacing: "0.1em" }}>PUNTOS INSUFICIENTES</span>
+                      <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--t2)", letterSpacing: "0.1em" }}>PUNTOS INSUFICIENTES</span>
                     </div>
                   )}
                   {!item.disponible && (
                     <div style={{
                       position: "absolute", top: "10px", right: "10px",
-                      background: "var(--bg3)", border: "1px solid var(--border)",
+                      background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)",
+                      border: "1px solid var(--border2)",
                       padding: "3px 10px", borderRadius: "6px",
                       fontSize: "10px", fontWeight: 700, color: "var(--t3)", letterSpacing: "0.1em"
                     }}>
@@ -158,7 +169,7 @@ export default function ShopPage() {
                     {item.nombre}
                   </p>
                   {item.descripcion && (
-                    <p style={{ fontSize: "11px", color: "var(--t4)", marginBottom: "14px", lineHeight: 1.5,
+                    <p style={{ fontSize: "11px", color: "var(--t3)", marginBottom: "14px", lineHeight: 1.5,
                       overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>
                       {item.descripcion}
                     </p>
@@ -166,7 +177,7 @@ export default function ShopPage() {
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: item.descripcion ? 0 : "14px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                       <Zap size={12} style={{ color: "var(--orange)" }} />
-                      <span className="display" style={{ fontSize: "15px", color: "var(--orange)" }}>
+                      <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "15px", color: "var(--orange)" }}>
                         {item.costo_puntos.toLocaleString()}
                       </span>
                     </div>

@@ -2,8 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { isAuthenticated } from "@/lib/auth";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+import Sidebar from "@/components/layout/Sidebar";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -22,10 +21,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
-      <Navbar />
-      <main style={{ paddingTop: "56px" }}>{children}</main>
-      <Footer />
+    <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
+      <Sidebar />
+      <main className="dashboard-main" style={{ paddingTop: "0" }}>
+        {/* Mobile top offset */}
+        <div className="md:hidden" style={{ height: "56px" }} />
+        {children}
+      </main>
     </div>
   );
 }

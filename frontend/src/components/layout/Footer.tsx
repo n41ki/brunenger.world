@@ -3,7 +3,7 @@ import LightningIcon from "@/components/ui/LightningIcon";
 
 export default function Footer() {
   return (
-    <footer style={{ borderTop: "1px solid var(--border)", marginTop: "80px" }}>
+    <footer style={{ borderTop: "1px solid var(--border)", marginTop: "80px", position: "relative", zIndex: 1 }}>
       <div style={{ maxWidth: "1152px", margin: "0 auto", padding: "28px 20px" }}>
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
