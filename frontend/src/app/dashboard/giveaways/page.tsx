@@ -5,248 +5,173 @@ import Image from "next/image";
 import { io, Socket } from "socket.io-client";
 import { getGiveaways, joinGiveaway } from "@/lib/api";
 import { fetchCurrentUser } from "@/lib/auth";
-import { Gift, Users, Trophy, Zap, CheckCircle, Sparkles } from "lucide-react";
+import { Gift, Users, Trophy, Zap, Check } from "lucide-react";
+import LightningIcon from "@/components/ui/LightningIcon";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
 interface Participant { id: string; username: string; avatar: string }
-interface Giveaway {
-  id: string;
-  premio: string;
-  descripcion?: string;
-  imagen?: string;
-  estado: "activo" | "finalizado" | "pendiente";
-  participantes: Participant[];
-  ganador?: Participant;
-}
-interface User { id: string; username: string }
+interface Giveaway { id: string; premio: string; descripcion?: string; estado: "activo" | "finalizado" | "pendiente"; participantes: Participant[]; ganador?: Participant }
+interface User { id: string }
 
 export default function GiveawaysPage() {
   const [giveaways, setGiveaways] = useState<Giveaway[]>([]);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser]     = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState<string | null>(null);
-  const [winner, setWinner] = useState<{ giveaway: string; user: Participant } | null>(null);
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [winner, setWinner]  = useState<{ prize: string; user: Participant } | null>(null);
+  const [, setSocket] = useState<Socket | null>(null);
 
-  const loadGiveaways = useCallback(() => {
-    getGiveaways()
-      .then((r) => setGiveaways(r.data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+  const load = useCallback(() => {
+    getGiveaways().then((r) => setGiveaways(r.data)).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
     fetchCurrentUser().then(setUser);
-    loadGiveaways();
-
-    // Socket.IO for real-time winner announcement
+    load();
     const s = io(BACKEND_URL);
     setSocket(s);
-
-    s.on("giveaway:winner", (data: { giveawayId: string; winner: Participant; prize: string }) => {
-      setWinner({ giveaway: data.prize, user: data.winner });
-      setGiveaways((prev) =>
-        prev.map((g) =>
-          g.id === data.giveawayId ? { ...g, estado: "finalizado", ganador: data.winner } : g
-        )
-      );
+    s.on("giveaway:winner", (d: { winner: Participant; prize: string }) => {
+      setWinner({ prize: d.prize, user: d.winner });
       setTimeout(() => setWinner(null), 8000);
     });
-
-    s.on("giveaway:update", () => loadGiveaways());
-
+    s.on("giveaway:update", load);
     return () => { s.disconnect(); };
-  }, [loadGiveaways]);
+  }, [load]);
 
-  const handleJoin = async (giveawayId: string) => {
-    setJoining(giveawayId);
-    try {
-      await joinGiveaway(giveawayId);
-      loadGiveaways();
-    } catch {}
-    finally { setJoining(null); }
+  const handleJoin = async (id: string) => {
+    setJoining(id);
+    try { await joinGiveaway(id); load(); } catch {} finally { setJoining(null); }
   };
 
-  const isParticipating = (giveaway: Giveaway) =>
-    user && giveaway.participantes.some((p) => p.id === user.id);
+  const isIn = (g: Giveaway) => user && g.participantes.some((p) => p.id === user.id);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-4xl mx-auto px-6 lg:px-8 py-10">
+
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <h1 className="font-orbitron font-black text-3xl sm:text-4xl text-white mb-2">
-          <span className="text-gradient-red-blue">SORTEOS</span>
-        </h1>
-        <p className="text-white/50 font-rajdhani text-lg">Participa y gana premios increíbles</p>
+      <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+        <div className="flex items-center gap-3 mb-1">
+          <Gift size={20} className="text-[#FF6B00]" />
+          <h1 className="font-display text-4xl tracking-widest text-white">SORTEOS</h1>
+        </div>
+        <p className="font-body text-sm text-[#555]">Participa y gana premios exclusivos</p>
       </motion.div>
 
-      {/* Winner announcement overlay */}
+      {/* Winner overlay */}
       <AnimatePresence>
         {winner && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm"
             onClick={() => setWinner(null)}
           >
             <motion.div
-              initial={{ scale: 0, rotate: -10 }}
-              animate={{ scale: 1, rotate: 0 }}
-              exit={{ scale: 0, rotate: 10 }}
-              transition={{ type: "spring", stiffness: 200 }}
-              className="relative bg-gradient-to-br from-yellow-500/20 to-red-500/20 border-2 border-yellow-500/60 rounded-3xl p-10 text-center max-w-md mx-4"
-              style={{ boxShadow: "0 0 60px rgba(255,215,0,0.4), 0 0 120px rgba(255,215,0,0.2)" }}
+              initial={{ scale: 0.8, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, y: 20 }}
+              transition={{ type: "spring", stiffness: 180 }}
+              className="bg-[#111] border border-[#FF6B00]/40 rounded-3xl p-10 text-center max-w-sm mx-4 shadow-[0_0_60px_rgba(255,107,0,0.2)]"
             >
-              {/* Sparkles */}
-              {[...Array(6)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute text-yellow-400"
-                  style={{
-                    top: `${10 + i * 15}%`,
-                    left: i % 2 === 0 ? `${5 + i * 5}%` : `${75 + i * 3}%`,
-                  }}
-                  animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 1], rotate: [0, 180, 360] }}
-                  transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
-                >
-                  <Sparkles size={20} />
-                </motion.div>
-              ))}
-
-              <Trophy size={48} className="text-yellow-400 mx-auto mb-4" />
-              <h2 className="font-orbitron font-black text-2xl text-yellow-400 mb-2">¡GANADOR!</h2>
-              <p className="text-white/60 text-sm mb-4 font-rajdhani">Premio: <span className="text-white font-bold">{winner.giveaway}</span></p>
+              <div className="flex justify-center mb-4 lightning-glow">
+                <LightningIcon size={36} />
+              </div>
+              <p className="font-body text-xs text-[#555] tracking-widest uppercase mb-1">Premio</p>
+              <p className="font-body font-semibold text-[#FF6B00] mb-6">{winner.prize}</p>
               {winner.user.avatar && (
-                <Image
-                  src={winner.user.avatar}
-                  alt={winner.user.username}
-                  width={80}
-                  height={80}
-                  className="rounded-full mx-auto mb-3 border-4 border-yellow-500"
-                />
+                <Image src={winner.user.avatar} alt={winner.user.username} width={72} height={72}
+                  className="rounded-full mx-auto mb-4 border-2 border-[#FF6B00]/50" />
               )}
-              <p className="font-orbitron font-black text-3xl text-white">{winner.user.username}</p>
-              <p className="text-white/40 text-sm mt-2 font-rajdhani">¡Felicitaciones!</p>
+              <p className="font-display text-3xl tracking-widest text-white">{winner.user.username}</p>
+              <p className="font-body text-xs text-[#444] mt-2">¡Felicitaciones!</p>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Giveaways grid */}
+      {/* Giveaways */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[1, 2].map((i) => (
-            <div key={i} className="h-64 rounded-2xl bg-white/5 animate-pulse" />
-          ))}
+        <div className="space-y-4">
+          {[1, 2].map((i) => <div key={i} className="h-48 rounded-2xl bg-[#111] animate-pulse" />)}
         </div>
       ) : giveaways.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex flex-col items-center justify-center py-20 gap-4 text-white/40"
-        >
-          <Gift size={48} />
-          <p className="font-orbitron text-xl">No hay sorteos activos</p>
-          <p className="font-rajdhani">¡Vuelve pronto para participar!</p>
-        </motion.div>
+        <div className="flex flex-col items-center justify-center py-24 gap-4 text-[#333]">
+          <Gift size={40} />
+          <p className="font-display text-2xl tracking-widest">SIN SORTEOS</p>
+          <p className="font-body text-sm">¡Vuelve pronto para participar!</p>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {giveaways.map((giveaway, i) => (
+        <div className="space-y-4">
+          {giveaways.map((g, i) => (
             <motion.div
-              key={giveaway.id}
-              initial={{ opacity: 0, y: 30 }}
+              key={g.id}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className={`rounded-2xl border overflow-hidden ${
-                giveaway.estado === "activo"
-                  ? "border-red-500/40 bg-gradient-to-br from-red-500/10 to-[#0d0d1a]"
-                  : "border-white/10 bg-[#0d0d1a] opacity-70"
+              transition={{ delay: i * 0.08 }}
+              className={`rounded-2xl border overflow-hidden transition-all ${
+                g.estado === "activo"
+                  ? "bg-[#111] border-[#FF6B00]/25"
+                  : "bg-[#0E0E0E] border-white/5 opacity-60"
               }`}
             >
-              {/* Prize header */}
               <div className="p-6">
+                {/* Top row */}
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      {giveaway.estado === "activo" ? (
-                        <span className="flex items-center gap-1.5 px-2 py-0.5 bg-red-500/20 border border-red-500/40 rounded-full text-red-400 text-xs font-orbitron font-bold">
-                          <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
-                          ACTIVO
-                        </span>
+                    <div className="flex items-center gap-2 mb-2">
+                      {g.estado === "activo" ? (
+                        <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#FF6B00]/10 border border-[#FF6B00]/25">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00] live-dot" />
+                          <span className="text-[10px] font-body font-bold text-[#FF6B00] tracking-widest">ACTIVO</span>
+                        </div>
                       ) : (
-                        <span className="px-2 py-0.5 bg-white/10 rounded-full text-white/40 text-xs font-orbitron">
-                          FINALIZADO
-                        </span>
+                        <span className="text-[10px] font-body text-[#333] tracking-widest bg-white/5 px-2.5 py-1 rounded-full">FINALIZADO</span>
                       )}
                     </div>
-                    <h3 className="font-orbitron font-black text-xl text-white">{giveaway.premio}</h3>
-                    {giveaway.descripcion && (
-                      <p className="text-white/50 text-sm mt-1 font-rajdhani">{giveaway.descripcion}</p>
-                    )}
+                    <h3 className="font-display text-2xl tracking-widest text-white">{g.premio}</h3>
+                    {g.descripcion && <p className="font-body text-sm text-[#555] mt-1">{g.descripcion}</p>}
                   </div>
-                  <Gift size={32} className={giveaway.estado === "activo" ? "text-red-400" : "text-white/30"} />
+                  <Gift size={24} className={g.estado === "activo" ? "text-[#FF6B00]" : "text-[#333]"} />
                 </div>
 
                 {/* Participants */}
-                <div className="flex items-center gap-2 mb-4">
-                  <Users size={14} className="text-white/40" />
-                  <span className="text-white/40 text-sm font-rajdhani">
-                    {giveaway.participantes.length} participante{giveaway.participantes.length !== 1 ? "s" : ""}
-                  </span>
-                  {/* Avatar stack */}
-                  <div className="flex -space-x-2 ml-1">
-                    {giveaway.participantes.slice(0, 5).map((p) => (
-                      <div key={p.id} className="w-6 h-6 rounded-full border border-[#0d0d1a] bg-blue-500/30 overflow-hidden">
-                        {p.avatar && <Image src={p.avatar} alt={p.username} width={24} height={24} />}
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="flex -space-x-2">
+                    {g.participantes.slice(0, 6).map((p) => (
+                      <div key={p.id} className="w-7 h-7 rounded-full border-2 border-[#111] bg-[#2a2a2a] overflow-hidden">
+                        {p.avatar && <Image src={p.avatar} alt={p.username} width={28} height={28} />}
                       </div>
                     ))}
-                    {giveaway.participantes.length > 5 && (
-                      <div className="w-6 h-6 rounded-full border border-[#0d0d1a] bg-white/20 flex items-center justify-center text-[10px] text-white/60">
-                        +{giveaway.participantes.length - 5}
-                      </div>
-                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs font-body text-[#444]">
+                    <Users size={12} />
+                    <span>{g.participantes.length} participantes</span>
                   </div>
                 </div>
 
-                {/* Winner or Join button */}
-                {giveaway.estado === "finalizado" && giveaway.ganador ? (
-                  <div className="flex items-center gap-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl">
-                    <Trophy size={16} className="text-yellow-400" />
-                    <span className="text-yellow-400 font-bold text-sm font-orbitron">
-                      Ganador: {giveaway.ganador.username}
-                    </span>
+                {/* Action */}
+                {g.estado === "finalizado" && g.ganador ? (
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-[#161616] border border-[#C9A84C]/20">
+                    <Trophy size={14} className="text-[#C9A84C]" />
+                    <span className="font-body text-sm text-[#C9A84C] font-medium">Ganador: {g.ganador.username}</span>
                   </div>
-                ) : giveaway.estado === "activo" ? (
-                  isParticipating(giveaway) ? (
-                    <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/30 rounded-xl text-green-400 font-bold text-sm font-orbitron">
-                      <CheckCircle size={16} />
-                      ¡YA ESTÁS PARTICIPANDO!
+                ) : g.estado === "activo" ? (
+                  isIn(g) ? (
+                    <div className="flex items-center gap-2 p-3 rounded-xl bg-[#161616] border border-white/8 text-sm font-body text-[#888]">
+                      <Check size={14} className="text-[#FF6B00]" />
+                      Ya estás participando
                     </div>
                   ) : (
                     <motion.button
-                      onClick={() => handleJoin(giveaway.id)}
-                      disabled={joining === giveaway.id}
-                      className="w-full py-3 bg-gradient-to-r from-red-600 to-red-500 text-white font-orbitron font-black text-sm rounded-xl hover:from-red-500 hover:to-red-400 transition-all"
-                      whileHover={{ scale: 1.02, boxShadow: "0 0 20px rgba(255,0,51,0.4)" }}
-                      whileTap={{ scale: 0.97 }}
+                      onClick={() => handleJoin(g.id)}
+                      disabled={joining === g.id}
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl btn-primary font-body font-semibold text-sm"
+                      whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
                     >
-                      {joining === giveaway.id ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                            className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
-                          />
-                          UNIÉNDOSE...
-                        </span>
-                      ) : (
-                        <span className="flex items-center justify-center gap-2">
-                          <Zap size={16} />
-                          PARTICIPAR
-                        </span>
-                      )}
+                      {joining === g.id
+                        ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        : <><Zap size={14} /> Participar</>
+                      }
                     </motion.button>
                   )
                 ) : null}
