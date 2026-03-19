@@ -36,17 +36,6 @@ function isEmojiOnly(text) {
   return stripped.length === 0 && text.trim().length > 0;
 }
 
-/** Detecta si contiene emojis */
-function hasEmoji(text) {
-  return /[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u.test(text);
-}
-
-/** Cuenta emojis en un texto */
-function countEmojis(text) {
-  const matches = text.match(/[\u{1F300}-\u{1FAFF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu);
-  return matches ? matches.length : 0;
-}
-
 /**
  * Obtiene o crea el usuario en Supabase por kick_user_id
  * Cachea el resultado 5 minutos
@@ -62,7 +51,7 @@ async function getOrCreateUser(kickUser) {
   // Buscar en DB
   let { data: user, error } = await supabase
     .from("users")
-    .select("id, kick_user_id, username, points, total_messages, emoji_messages")
+    .select("id, kick_user_id, username, puntos, mensajes_chat, emoji_messages")
     .eq("kick_user_id", String(kickUser.id))
     .single();
 
@@ -74,12 +63,12 @@ async function getOrCreateUser(kickUser) {
         kick_user_id: String(kickUser.id),
         username: kickUser.username,
         avatar: kickUser.profile_pic || null,
-        points: 0,
-        total_messages: 0,
+        puntos: 0,
+        mensajes_chat: 0,
         emoji_messages: 0,
         created_at: new Date().toISOString(),
       })
-      .select("id, kick_user_id, username, points, total_messages, emoji_messages")
+      .select("id, kick_user_id, username, puntos, mensajes_chat, emoji_messages")
       .single();
 
     if (createErr) {
@@ -102,8 +91,8 @@ async function awardPoints(kickUserId, pointsToAdd, statsUpdate) {
   // Actualizar cache local primero
   if (userCache.has(String(kickUserId))) {
     const c = userCache.get(String(kickUserId));
-    c.points = (c.points || 0) + pointsToAdd;
-    if (statsUpdate.total_messages) c.total_messages = (c.total_messages || 0) + 1;
+    c.puntos = (c.puntos || 0) + pointsToAdd;
+    if (statsUpdate.mensajes_chat) c.mensajes_chat = (c.mensajes_chat || 0) + 1;
     if (statsUpdate.emoji_messages) c.emoji_messages = (c.emoji_messages || 0) + 1;
   }
 
@@ -136,7 +125,7 @@ async function awardPoints(kickUserId, pointsToAdd, statsUpdate) {
 
 async function handleChatMessage(data) {
   try {
-    const { sender, content, type } = data;
+    const { sender, content } = data;
     if (!sender || !content) return;
 
     const kickUser = {
@@ -151,7 +140,6 @@ async function handleChatMessage(data) {
     // Calcular puntos y stats
     let pointsEarned = POINTS.MESSAGE;
     const emojiOnly = isEmojiOnly(content);
-    const emojiCount = countEmojis(content);
     const isFirstMsg = !sessionFirstMessages.has(String(sender.id));
 
     if (isFirstMsg) {
@@ -161,7 +149,7 @@ async function handleChatMessage(data) {
     }
 
     await awardPoints(sender.id, pointsEarned, {
-      total_messages: true,
+      mensajes_chat: true,
       emoji_messages: emojiOnly,
     });
 
