@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Menu, X, Zap } from "lucide-react";
 import { fetchCurrentUser, logout, isAuthenticated } from "@/lib/auth";
 import LightningIcon from "@/components/ui/LightningIcon";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 
 interface User { username: string; avatar: string; puntos: number }
 
@@ -17,77 +18,105 @@ const LINKS = [
 ];
 
 export default function Navbar() {
-  const [user, setUser]       = useState<User | null>(null);
-  const [open, setOpen]       = useState(false);
-  const [solid, setSolid]     = useState(false);
+  const [user,    setUser]    = useState<User | null>(null);
+  const [open,    setOpen]    = useState(false);
+  const [scrolled,setScrolled]= useState(false);
 
   useEffect(() => {
     if (isAuthenticated()) fetchCurrentUser().then(setUser);
-    const fn = () => setSolid(window.scrollY > 10);
+    const fn = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", fn);
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
   return (
-    <header className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${solid ? "bg-[#0B0B0B]/95 backdrop-blur-sm border-b border-[rgba(255,255,255,0.07)]" : ""}`}>
-      <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
+    <header
+      className={`navbar ${scrolled ? "scrolled" : ""}`}
+      style={{ height: "56px" }}
+    >
+      <div className="max-w-6xl mx-auto px-5 h-full flex items-center justify-between">
 
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group">
-          <span className="bolt"><LightningIcon size={20} /></span>
-          <span className="display text-[18px] tracking-[0.08em] text-white group-hover:text-[#F97316] transition-colors">
+        <Link href="/" className="flex items-center gap-2 group" style={{ textDecoration: "none" }}>
+          <span className="bolt"><LightningIcon size={19} /></span>
+          <span className="display" style={{
+            fontSize: "17px", letterSpacing: "0.1em",
+            color: "var(--t1)", transition: "color 0.2s"
+          }}>
             BRUNENGER
           </span>
         </Link>
 
-        {/* Desktop links */}
-        <nav className="hidden md:flex items-center gap-1">
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-0.5">
           {LINKS.map(l => (
-            <Link key={l.href} href={l.href}
-              className="px-4 py-2 text-[13px] font-medium text-[#555] hover:text-white transition-colors rounded-md hover:bg-white/[0.04]">
-              {l.label}
+            <Link key={l.href} href={l.href} style={{ textDecoration: "none" }}>
+              <span style={{
+                display: "block", padding: "6px 14px", borderRadius: "8px",
+                fontSize: "13px", fontWeight: 500, color: "var(--t3)",
+                transition: "color 0.15s, background 0.15s",
+              }}
+                onMouseEnter={e => { (e.target as HTMLElement).style.color = "var(--t1)"; (e.target as HTMLElement).style.background = "var(--bg2)"; }}
+                onMouseLeave={e => { (e.target as HTMLElement).style.color = "var(--t3)"; (e.target as HTMLElement).style.background = "transparent"; }}
+              >
+                {l.label}
+              </span>
             </Link>
           ))}
         </nav>
 
         {/* Right */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+
           {user ? (
             <>
-              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#161616] border border-[rgba(255,255,255,0.07)]">
-                <Zap size={11} className="accent" />
-                <span className="text-[13px] font-semibold accent">{user.puntos.toLocaleString()}</span>
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg"
+                style={{ background: "var(--orange-bg)", border: "1px solid var(--orange-bd)" }}>
+                <Zap size={11} style={{ color: "var(--orange)" }} />
+                <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--orange)" }}>
+                  {user.puntos.toLocaleString()}
+                </span>
               </div>
               {user.avatar && (
                 <Image src={user.avatar} alt={user.username} width={28} height={28}
-                  className="rounded-full border border-[rgba(255,255,255,0.1)]" />
+                  className="rounded-full" style={{ border: "1.5px solid var(--border2)" }} />
               )}
-              <button onClick={() => logout()} className="text-[12px] text-[#444] hover:text-[#888] transition-colors">
+              <button onClick={() => logout()} className="btn btn-sm btn-ghost" style={{ padding: "5px 12px" }}>
                 Salir
               </button>
             </>
           ) : (
             <Link href="/">
-              <button className="btn btn-orange text-[13px] px-5 py-2">Ingresar</button>
+              <button className="btn btn-primary btn-sm">Ingresar</button>
             </Link>
           )}
-          <button className="md:hidden text-[#555] hover:text-white" onClick={() => setOpen(!open)}>
-            {open ? <X size={18} /> : <Menu size={18} />}
+
+          <button
+            className="md:hidden btn btn-icon btn-ghost"
+            onClick={() => setOpen(!open)}
+            style={{ width: "34px", height: "34px" }}
+          >
+            {open ? <X size={16} /> : <Menu size={16} />}
           </button>
         </div>
       </div>
 
-      {/* Mobile */}
+      {/* Mobile drawer */}
       <AnimatePresence>
         {open && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="md:hidden bg-[#111] border-b border-[rgba(255,255,255,0.07)]">
-            <div className="px-5 py-3 flex flex-col gap-1">
+            style={{ background: "var(--bg1)", borderBottom: "1px solid var(--border)", overflow: "hidden" }}
+          >
+            <div style={{ padding: "12px 20px", display: "flex", flexDirection: "column", gap: "2px" }}>
               {LINKS.map(l => (
-                <Link key={l.href} href={l.href} onClick={() => setOpen(false)}
-                  className="py-2.5 text-[13px] text-[#555] hover:text-white transition-colors">
-                  {l.label}
+                <Link key={l.href} href={l.href} onClick={() => setOpen(false)} style={{ textDecoration: "none" }}>
+                  <div style={{ padding: "10px 12px", borderRadius: "8px", fontSize: "14px", color: "var(--t2)" }}>
+                    {l.label}
+                  </div>
                 </Link>
               ))}
             </div>

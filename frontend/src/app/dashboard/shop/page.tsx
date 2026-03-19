@@ -4,99 +4,180 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { getShopItems, redeemItem } from "@/lib/api";
 import { fetchCurrentUser } from "@/lib/auth";
-import { Zap, ShoppingBag, Check, X } from "lucide-react";
+import { Zap, ShoppingBag, Check, X, Search } from "lucide-react";
 import LightningIcon from "@/components/ui/LightningIcon";
 
-interface Item { id: string; nombre: string; imagen: string; costo_puntos: number; descripcion?: string; disponible: boolean }
+interface Item { id: string; nombre: string; imagen: string; costo_puntos: number; descripcion?: string; categoria?: string; disponible: boolean }
 interface User { puntos: number }
 type Toast = { msg: string; ok: boolean } | null;
 
 export default function ShopPage() {
   const [items,     setItems]     = useState<Item[]>([]);
+  const [filtered,  setFiltered]  = useState<Item[]>([]);
   const [user,      setUser]      = useState<User | null>(null);
   const [loading,   setLoading]   = useState(true);
   const [redeeming, setRedeeming] = useState<string | null>(null);
   const [toast,     setToast]     = useState<Toast>(null);
+  const [search,    setSearch]    = useState("");
+  const [sort,      setSort]      = useState<"asc"|"desc">("asc");
 
   useEffect(() => {
     Promise.all([getShopItems(), fetchCurrentUser()])
-      .then(([s, u]) => { setItems(s.data); setUser(u); })
+      .then(([s, u]) => { setItems(s.data); setFiltered(s.data); setUser(u); })
       .catch(() => {}).finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    let res = items.filter(i => i.nombre.toLowerCase().includes(search.toLowerCase()));
+    res = res.sort((a, b) => sort === "asc" ? a.costo_puntos - b.costo_puntos : b.costo_puntos - a.costo_puntos);
+    setFiltered(res);
+  }, [search, sort, items]);
+
   const notify = (msg: string, ok: boolean) => {
     setToast({ msg, ok });
-    setTimeout(() => setToast(null), 3000);
+    setTimeout(() => setToast(null), 3500);
   };
 
   const redeem = async (item: Item) => {
-    if (!user || user.puntos < item.costo_puntos) { notify("Puntos insuficientes", false); return; }
+    if (!user || user.puntos < item.costo_puntos) { notify("No tienes suficientes puntos", false); return; }
     setRedeeming(item.id);
     try {
       await redeemItem(item.id);
       setUser(u => u ? { ...u, puntos: u.puntos - item.costo_puntos } : u);
-      notify(`"${item.nombre}" canjeado`, true);
+      notify(`"${item.nombre}" canjeado exitosamente`, true);
     } catch (e: unknown) {
       notify((e as { response?: { data?: { error?: string } } })?.response?.data?.error || "Error al canjear", false);
     } finally { setRedeeming(null); }
   };
 
-  return (
-    <div className="max-w-5xl mx-auto px-5 py-10">
+  const pts = user?.puntos || 0;
 
-      <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between mb-8">
-        <div>
-          <div className="label mb-1">Recompensas</div>
-          <h1 className="display text-[36px] tracking-widest text-white">TIENDA</h1>
-        </div>
-        {user && (
-          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl card">
-            <span className="bolt"><LightningIcon size={14} /></span>
-            <span className="display text-[20px] tracking-widest accent">{user.puntos.toLocaleString()}</span>
-            <span className="text-[11px] text-[#444]">pts</span>
+  return (
+    <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "40px 20px" }}>
+
+      {/* Header */}
+      <motion.div className="anim-0" style={{ marginBottom: "32px" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", flexWrap: "wrap" }}>
+          <div>
+            <span className="label" style={{ display: "block", marginBottom: "4px" }}>Recompensas</span>
+            <h1 className="display" style={{ fontSize: "42px", color: "var(--t1)" }}>TIENDA</h1>
           </div>
-        )}
+          {/* Points display */}
+          <div className="card" style={{ padding: "14px 20px", display: "flex", alignItems: "center", gap: "10px" }}>
+            <span className="bolt"><LightningIcon size={16} /></span>
+            <div>
+              <p className="label" style={{ fontSize: "10px", marginBottom: "2px" }}>TUS PUNTOS</p>
+              <p className="display" style={{ fontSize: "26px", color: "var(--orange)" }}>{pts.toLocaleString()}</p>
+            </div>
+          </div>
+        </div>
       </motion.div>
 
+      {/* Filters bar */}
+      <motion.div className="anim-1" style={{
+        display: "flex", gap: "10px", marginBottom: "28px", flexWrap: "wrap", alignItems: "center"
+      }}>
+        {/* Search */}
+        <div style={{ flex: 1, minWidth: "200px", position: "relative" }}>
+          <Search size={14} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--t4)" }} />
+          <input
+            className="input" placeholder="Buscar item..."
+            value={search} onChange={e => setSearch(e.target.value)}
+            style={{ paddingLeft: "36px" }}
+          />
+        </div>
+        {/* Sort */}
+        <div className="tabs" style={{ width: "auto", flexShrink: 0 }}>
+          <button className={`tab${sort === "asc" ? " active" : ""}`} onClick={() => setSort("asc")}>
+            Menor precio
+          </button>
+          <button className={`tab${sort === "desc" ? " active" : ""}`} onClick={() => setSort("desc")}>
+            Mayor precio
+          </button>
+        </div>
+      </motion.div>
+
+      {/* Grid */}
       {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: "16px" }}>
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-56 rounded-xl bg-[#111] animate-pulse" />
+            <div key={i} style={{ height: "260px", borderRadius: "16px", background: "var(--bg2)", animation: "pulse 1.5s infinite" }} />
           ))}
         </div>
-      ) : items.length === 0 ? (
-        <div className="flex flex-col items-center py-24 gap-4 text-[#2A2A2A]">
-          <ShoppingBag size={36} />
-          <p className="display text-[20px] tracking-widest">SIN ITEMS</p>
+      ) : filtered.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "80px 0", color: "var(--t4)" }}>
+          <ShoppingBag size={40} style={{ margin: "0 auto 16px" }} />
+          <p className="display" style={{ fontSize: "22px" }}>{items.length === 0 ? "SIN ITEMS" : "SIN RESULTADOS"}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {items.map((item, i) => {
-            const can = (user?.puntos || 0) >= item.costo_puntos && item.disponible;
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: "16px" }}>
+          {filtered.map((item, i) => {
+            const canAfford = pts >= item.costo_puntos && item.disponible;
             return (
-              <motion.div key={item.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+              <motion.div
+                key={item.id}
+                className={`item-card${!canAfford ? " no-points" : ""}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
-                className={`card overflow-hidden ${!item.disponible ? "opacity-40" : ""}`}>
-                <div className="relative h-36 bg-[#161616]">
+              >
+                {/* Image */}
+                <div style={{ position: "relative", height: "148px", background: "var(--bg2)", overflow: "hidden" }}>
                   {item.imagen
-                    ? <Image src={item.imagen} alt={item.nombre} fill className="object-cover" />
-                    : <div className="flex items-center justify-center h-full"><ShoppingBag size={24} className="text-[#2A2A2A]" /></div>
+                    ? <Image src={item.imagen} alt={item.nombre} fill style={{ objectFit: "cover" }} />
+                    : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%" }}>
+                        <ShoppingBag size={28} style={{ color: "var(--t4)" }} />
+                      </div>
                   }
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#111] to-transparent" />
-                </div>
-                <div className="p-4">
-                  <p className="font-semibold text-[13px] text-white truncate mb-1">{item.nombre}</p>
-                  {item.descripcion && <p className="text-[11px] text-[#444] mb-3 line-clamp-2">{item.descripcion}</p>}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      <Zap size={11} className="accent" />
-                      <span className="display text-[13px] tracking-wide accent">{item.costo_puntos.toLocaleString()}</span>
+                  {/* Gradient overlay */}
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, var(--bg1), transparent 60%)" }} />
+                  {/* Cant-afford overlay */}
+                  {!canAfford && item.disponible && (
+                    <div style={{
+                      position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                      background: "rgba(0,0,0,0.45)", backdropFilter: "blur(2px)"
+                    }}>
+                      <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--t3)", letterSpacing: "0.1em" }}>PUNTOS INSUFICIENTES</span>
                     </div>
-                    <button onClick={() => redeem(item)} disabled={!can || redeeming === item.id}
-                      className={`btn text-[11px] px-3 py-1.5 ${can ? "btn-orange" : "btn-outline"}`}
-                      style={{ opacity: can ? 1 : 0.4 }}>
-                      {redeeming === item.id ? "..." : "Canjear"}
+                  )}
+                  {!item.disponible && (
+                    <div style={{
+                      position: "absolute", top: "10px", right: "10px",
+                      background: "var(--bg3)", border: "1px solid var(--border)",
+                      padding: "3px 10px", borderRadius: "6px",
+                      fontSize: "10px", fontWeight: 700, color: "var(--t3)", letterSpacing: "0.1em"
+                    }}>
+                      AGOTADO
+                    </div>
+                  )}
+                </div>
+
+                {/* Body */}
+                <div style={{ padding: "16px" }}>
+                  <p style={{ fontWeight: 600, fontSize: "13px", color: "var(--t1)", marginBottom: "4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {item.nombre}
+                  </p>
+                  {item.descripcion && (
+                    <p style={{ fontSize: "11px", color: "var(--t4)", marginBottom: "14px", lineHeight: 1.5,
+                      overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as const }}>
+                      {item.descripcion}
+                    </p>
+                  )}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: item.descripcion ? 0 : "14px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                      <Zap size={12} style={{ color: "var(--orange)" }} />
+                      <span className="display" style={{ fontSize: "15px", color: "var(--orange)" }}>
+                        {item.costo_puntos.toLocaleString()}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => redeem(item)}
+                      disabled={!canAfford || redeeming === item.id}
+                      className={`btn btn-sm ${canAfford ? "btn-primary" : "btn-ghost"}`}
+                    >
+                      {redeeming === item.id
+                        ? <div style={{ width: "12px", height: "12px", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
+                        : "Canjear"}
                     </button>
                   </div>
                 </div>
@@ -106,17 +187,23 @@ export default function ShopPage() {
         </div>
       )}
 
+      {/* Toast */}
       <AnimatePresence>
         {toast && (
-          <motion.div initial={{ opacity: 0, y: 12, x: "-50%" }} animate={{ opacity: 1, y: 0, x: "-50%" }}
-            exit={{ opacity: 0, y: 12, x: "-50%" }}
-            className={`fixed bottom-8 left-1/2 flex items-center gap-2.5 px-5 py-3 rounded-xl text-[13px] font-medium z-50 card`}
-            style={{ borderColor: toast.ok ? "rgba(249,115,22,0.3)" : "rgba(239,68,68,0.3)" }}>
-            {toast.ok ? <Check size={14} className="accent" /> : <X size={14} className="text-red-400" />}
-            <span className={toast.ok ? "accent" : "text-red-400"}>{toast.msg}</span>
+          <motion.div
+            initial={{ opacity: 0, y: 16, x: "-50%" }}
+            animate={{ opacity: 1, y: 0, x: "-50%" }}
+            exit={{ opacity: 0, y: 16, x: "-50%" }}
+            className={`toast ${toast.ok ? "toast-success" : "toast-error"}`}
+            style={{ position: "fixed", bottom: "28px", left: "50%", zIndex: 100 }}
+          >
+            {toast.ok ? <Check size={15} /> : <X size={15} />}
+            {toast.msg}
           </motion.div>
         )}
       </AnimatePresence>
+
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}} @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
     </div>
   );
 }
