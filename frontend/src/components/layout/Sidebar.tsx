@@ -15,7 +15,7 @@ const AVATAR = "https://files.kick.com/images/user/1704959/profile_image/convers
 interface User { username: string; avatar: string; puntos: number; es_admin?: boolean }
 
 const LINKS = [
-  { href: "/dashboard",           label: "Inicio",   icon: Home       },
+  { href: "/",                     label: "Inicio",   icon: Home       },
   { href: "/dashboard/stream",    label: "Stream",   icon: Radio      },
   { href: "/dashboard/shop",      label: "Tienda",   icon: ShoppingBag },
   { href: "/dashboard/rankings",  label: "Rankings", icon: Trophy     },
@@ -73,7 +73,7 @@ export default function Sidebar() {
         padding: "0 12px", borderBottom: "1px solid rgba(255,255,255,0.06)",
         flexShrink: 0,
       }}>
-        <Link href="/dashboard" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none", overflow: "hidden", flex: 1 }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none", overflow: "hidden", flex: 1 }}>
           <Image src={AVATAR} alt="Brunenger" width={32} height={32}
             style={{ borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.15)", flexShrink: 0 }} />
           {expanded && (
@@ -95,7 +95,7 @@ export default function Sidebar() {
       {/* Nav */}
       <nav style={{ flex: 1, padding: "10px 8px", display: "flex", flexDirection: "column", gap: "2px", overflowY: "auto", overflowX: "hidden" }}>
         {LINKS.map(l => {
-          const exact = l.href === "/dashboard";
+          const exact = l.href === "/" || l.href === "/dashboard";
           const active = exact ? pathname === l.href : pathname.startsWith(l.href);
           return (
             <Link key={l.href} href={l.href} title={!expanded ? l.label : undefined} style={{
@@ -194,7 +194,7 @@ export default function Sidebar() {
 // ── Mobile bottom bar ───────────────────────────────────────────────────────
 function MobileBar({ user, pathname }: { user: User | null; pathname: string }) {
   const links = [
-    { href: "/dashboard",           icon: Home       },
+    { href: "/",                     icon: Home       },
     { href: "/dashboard/stream",    icon: Radio      },
     { href: "/dashboard/shop",      icon: ShoppingBag },
     { href: "/dashboard/rankings",  icon: Trophy     },
@@ -210,7 +210,7 @@ function MobileBar({ user, pathname }: { user: User | null; pathname: string }) 
         borderBottom: "1px solid rgba(255,255,255,0.06)",
         display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px"
       }}>
-        <Link href="/dashboard" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
+        <Link href="/" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
           <Image src={AVATAR} alt="Brunenger" width={26} height={26} style={{ borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.15)" }} />
           <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "13px", color: "#fff" }}>Brunenger World</span>
         </Link>
