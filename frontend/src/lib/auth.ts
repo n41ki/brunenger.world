@@ -49,6 +49,7 @@ export async function getKickAuthUrl(): Promise<string> {
     code_challenge_method: "S256",
   });
 
+  // Kick OAuth 2.0 PKCE - Authorization endpoint
   return `https://id.kick.com/oauth/authorize?${params.toString()}`;
 }
 
