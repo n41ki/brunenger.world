@@ -50,12 +50,10 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
 }));
 
-// Guardar raw body para verificación de firma de webhooks
-app.use((req, res, next) => {
-  let raw = "";
-  req.on("data", chunk => { raw += chunk; });
-  req.on("end", () => { req.rawBody = raw; next(); });
-});
+// Guardar raw body para verificación de firma de webhooks (solo en /webhook)
+app.use("/webhook", express.json({
+  verify: (req, res, buf) => { req.rawBody = buf.toString(); }
+}));
 app.use(express.json());
 
 // Rate limiting
