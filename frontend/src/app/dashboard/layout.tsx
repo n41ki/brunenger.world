@@ -9,10 +9,23 @@ const YT_ID = "yzmLLn-InkM";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [ok, setOk] = useState(false);
+  const [sidebarW, setSidebarW] = useState("60px");
 
   useEffect(() => {
     if (!isAuthenticated()) router.push("/");
     else setOk(true);
+
+    // Read initial sidebar state
+    const saved = localStorage.getItem("bw-sidebar");
+    if (saved === "1") setSidebarW("220px");
+
+    // Listen for sidebar resize events
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail?.width) setSidebarW(detail.width);
+    };
+    window.addEventListener("sidebar-resize", handler);
+    return () => window.removeEventListener("sidebar-resize", handler);
   }, [router]);
 
   if (!ok) return (
@@ -35,7 +48,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
 
       <Sidebar />
-      <main id="dashboard-content" style={{ marginLeft: "60px", minHeight: "100vh", position: "relative", zIndex: 1, transition: "margin-left 0.22s cubic-bezier(0.4,0,0.2,1)" }}>
+      <main id="dashboard-content" style={{
+        marginLeft: sidebarW,
+        minHeight: "100vh",
+        position: "relative",
+        zIndex: 1,
+        transition: "margin-left 0.22s cubic-bezier(0.4,0,0.2,1)",
+      }}>
         <div className="md:hidden" style={{ height: "52px" }} />
         {children}
         <div className="md:hidden" style={{ height: "56px" }} />

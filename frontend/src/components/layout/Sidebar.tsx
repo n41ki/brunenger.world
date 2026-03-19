@@ -40,6 +40,12 @@ export default function Sidebar() {
     return () => mq.removeEventListener("change", fn);
   }, []);
 
+  // Notify layout of sidebar width changes
+  useEffect(() => {
+    if (mobile) return;
+    window.dispatchEvent(new CustomEvent("sidebar-resize", { detail: { width: expanded ? "220px" : "60px" } }));
+  }, [expanded, mobile]);
+
   const toggle = () => {
     const next = !expanded;
     setExpanded(next);
