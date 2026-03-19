@@ -63,9 +63,10 @@ function AuthCallbackContent() {
         setTimeout(() => router.push("/dashboard"), 1500);
       })
       .catch((err) => {
+        const msg = err.response?.data?.detail || err.response?.data?.error || "Error al autenticar. Intenta de nuevo.";
         setStatus("error");
-        setMessage(err.response?.data?.error || "Error al autenticar. Intenta de nuevo.");
-        setTimeout(() => router.push("/"), 3000);
+        setMessage(msg);
+        setTimeout(() => router.push("/"), 6000);
       });
   }, [searchParams, router]);
 

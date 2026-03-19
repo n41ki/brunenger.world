@@ -91,8 +91,12 @@ router.post("/kick/callback", async (req, res) => {
 
     res.json({ token, user: dbUser });
   } catch (err) {
-    console.error("Auth error:", err.response?.data || err.message);
-    res.status(500).json({ error: "Error de autenticación con Kick" });
+    const detail = err.response?.data || err.message;
+    console.error("Auth error:", JSON.stringify(detail));
+    res.status(500).json({
+      error: "Error de autenticación con Kick",
+      detail: typeof detail === "object" ? JSON.stringify(detail) : detail,
+    });
   }
 });
 
