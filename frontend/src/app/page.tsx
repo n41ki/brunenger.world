@@ -4,13 +4,21 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Home, ShoppingBag, Trophy, Gift, Radio,
-  ChevronRight, Zap, LogIn
+  ChevronRight
 } from "lucide-react";
 import { getKickAuthUrl, isAuthenticated } from "@/lib/auth";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 
 const AVATAR  = "https://files.kick.com/images/user/1704959/profile_image/conversion/1e3e2b85-0a64-49dc-937c-b138e691d27c-fullsize.webp";
 const YT_ID   = "yzmLLn-InkM";
+const KICK_CHANNEL = "brunenger";
+const KICK_GREEN = "#53FC18";
+
+const KickIcon = ({ size = 14 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M4 3h4v7.5l7-7.5H20l-8.5 9L20 21h-5.1l-6.9-7.5V21H4V3z"/>
+  </svg>
+);
 
 const NAV = [
   { label: "Inicio",   icon: Home,        active: true  },
@@ -128,10 +136,10 @@ export default function HomePage() {
               <button onClick={login} disabled={loading} style={{
                 display: "flex", alignItems: "center", justifyContent: "center", gap: "6px",
                 padding: "9px 14px", borderRadius: "10px", cursor: "pointer",
-                background: "rgba(249,115,22,0.12)", border: "1px solid rgba(249,115,22,0.3)",
-                color: "#F97316", fontSize: "12px", fontWeight: 700,
+                background: "rgba(83,252,24,0.12)", border: `1px solid rgba(83,252,24,0.3)`,
+                color: KICK_GREEN, fontSize: "12px", fontWeight: 700,
               }}>
-                <LogIn size={13} /> {loading ? "..." : "Iniciar sesión"}
+                <KickIcon size={12} /> {loading ? "..." : "Iniciar sesión"}
               </button>
             </>
           ) : (
@@ -142,9 +150,9 @@ export default function HomePage() {
               <div title="Iniciar sesión" onClick={login} style={{
                 display: "flex", alignItems: "center", justifyContent: "center",
                 padding: "10px", borderRadius: "10px",
-                background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.25)", cursor: "pointer"
+                background: "rgba(83,252,24,0.1)", border: "1px solid rgba(83,252,24,0.25)", cursor: "pointer"
               }}>
-                <LogIn size={14} style={{ color: "#F97316" }} />
+                <KickIcon size={14} />
               </div>
             </>
           )}
@@ -167,13 +175,13 @@ export default function HomePage() {
             style={{
               display: "flex", alignItems: "center", gap: "8px",
               padding: "8px 18px", borderRadius: "8px", cursor: "pointer",
-              background: "#53FC18", border: "none",
+              background: KICK_GREEN, border: "none",
               color: "#000", fontSize: "13px", fontWeight: 800,
               opacity: loading ? 0.7 : 1,
+              boxShadow: "0 4px 16px rgba(83,252,24,0.25)",
             }}>
-            {/* Kick K icon */}
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M4 3h4v7.5l7-7.5H20l-8.5 9L20 21h-5.1l-6.9-7.5V21H4V3z"/></svg>
-            {loading ? "Conectando..." : "Iniciar"}
+            <KickIcon size={14} />
+            {loading ? "Conectando..." : "Iniciar con Kick"}
           </button>
         </div>
 
@@ -211,43 +219,55 @@ export default function HomePage() {
             WORLD
           </h2>
 
-          {/* YouTube video embed */}
+          {/* Kick channel embed */}
           <div style={{
             width: "100%", maxWidth: "580px",
             borderRadius: "16px", overflow: "hidden",
-            border: "1px solid rgba(255,255,255,0.12)",
-            boxShadow: "0 32px 80px rgba(0,0,0,0.8)",
-            marginBottom: "28px",
+            border: `1px solid rgba(83,252,24,0.25)`,
+            boxShadow: `0 32px 80px rgba(0,0,0,0.8), 0 0 60px rgba(83,252,24,0.08)`,
+            marginBottom: "12px",
             background: "#000",
           }}>
             <div style={{ position: "relative", paddingTop: "56.25%" }}>
               <iframe
-                src={`https://www.youtube.com/embed/${YT_ID}?rel=0&modestbranding=1`}
+                src={`https://player.kick.com/${KICK_CHANNEL}`}
                 style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
-                title="Brunenger World"
+                title="Brunenger Kick"
               />
             </div>
           </div>
+          {/* Channel link */}
+          <a href={`https://kick.com/${KICK_CHANNEL}`} target="_blank" rel="noopener noreferrer"
+            style={{
+              display: "flex", alignItems: "center", gap: "6px",
+              fontSize: "12px", color: "rgba(255,255,255,0.5)",
+              marginBottom: "28px", textDecoration: "none",
+              transition: "color 0.15s",
+            }}
+            onMouseEnter={e => (e.currentTarget.style.color = KICK_GREEN)}
+            onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.5)")}
+          >
+            <KickIcon size={11} /> kick.com/{KICK_CHANNEL}
+          </a>
 
           {/* CTA button */}
           <button onClick={login} disabled={loading}
             style={{
               display: "flex", alignItems: "center", gap: "10px",
               padding: "14px 40px", borderRadius: "999px",
-              background: "rgba(255,255,255,0.1)",
+              background: "rgba(83,252,24,0.1)",
               backdropFilter: "blur(12px)",
-              border: "1px solid rgba(255,255,255,0.2)",
-              color: "#fff", fontSize: "15px", fontWeight: 700,
+              border: "1px solid rgba(83,252,24,0.3)",
+              color: KICK_GREEN, fontSize: "15px", fontWeight: 700,
               cursor: "pointer", letterSpacing: "0.02em",
               transition: "all 0.2s ease",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.4), 0 0 30px rgba(83,252,24,0.08)",
             }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(249,115,22,0.2)"; (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(249,115,22,0.5)"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.1)"; (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(255,255,255,0.2)"; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(83,252,24,0.2)"; (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(83,252,24,0.5)"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(83,252,24,0.1)"; (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(83,252,24,0.3)"; }}
           >
-            <Zap size={16} style={{ color: "#F97316" }} />
+            <KickIcon size={16} />
             {loading ? "Conectando..." : "Iniciar sesión con Kick"}
           </button>
 
