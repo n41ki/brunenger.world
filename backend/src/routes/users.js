@@ -48,22 +48,64 @@ router.get("/me/profile", authMiddleware, async (req, res) => {
     // Get total user count
     const totalUsers = allUsers ? allUsers.length : 0;
 
-    // Try to fetch Kick channel data using stored access token
-    let kickChannelData = null;
+    // Brunenger's channel IDs (fixed)
+    const BRUNENGER_USER_ID = 1704959;
+
+    // Fetch all available Kick data in parallel
+    let kickUserData = null;
+    let kickFollowData = null;
+    let kickSubData = null;
+
     if (user.kick_access_token) {
-      try {
-        // Fetch user's own channel info from Kick
-        const channelRes = await axios.get("https://api.kick.com/public/v1/channels", {
-          headers: {
-            Authorization: `Bearer ${user.kick_access_token}`,
-            "Client-Id": KICK_CLIENT_ID,
-          },
-          params: { broadcaster_user_id: user.kick_id },
-        });
-        kickChannelData = channelRes.data?.data?.[0] || null;
-      } catch (e) {
-        // Token might be expired, that's ok
-        console.log("Could not fetch Kick channel data:", e.response?.status);
+      const headers = {
+        Authorization: `Bearer ${user.kick_access_token}`,
+        "Client-Id": KICK_CLIENT_ID,
+        "Accept": "application/json",
+      };
+
+      const [userRes, followRes, subRes] = await Promise.allSettled([
+        // Own Kick user info (badges, bio, etc.)
+        axios.get("https://api.kick.com/public/v1/users", { headers }),
+
+        // Follow status for Brunenger's channel
+        axios.get("https://api.kick.com/public/v1/channels/followed", {
+          headers,
+          params: { broadcaster_user_id: BRUNENGER_USER_ID },
+        }),
+
+        // Subscription status on Brunenger's channel
+        axios.get("https://api.kick.com/public/v1/subscriptions", {
+          headers,
+          params: { broadcaster_user_id: BRUNENGER_USER_ID },
+        }),
+      ]);
+
+      if (userRes.status === "fulfilled") {
+        kickUserData = userRes.value.data?.data?.[0] || userRes.value.data?.data || null;
+      }
+      if (followRes.status === "fulfilled") {
+        const followList = followRes.value.data?.data || [];
+        kickFollowData = followList.find(f => String(f.broadcaster_user_id) === String(BRUNENGER_USER_ID)) || null;
+      }
+      if (subRes.status === "fulfilled") {
+        const subList = subRes.value.data?.data || [];
+        kickSubData = subList.length > 0 ? subList[0] : null;
+      }
+
+      // Update DB with fresh Kick data
+      const updatePayload = {};
+      if (kickFollowData) {
+        updatePayload.fecha_follow = kickFollowData.followed_at || kickFollowData.created_at || null;
+      }
+      if (kickSubData !== null) {
+        updatePayload.es_suscriptor = kickSubData !== null;
+        updatePayload.subscription_tier = kickSubData?.tier || null;
+      }
+      if (kickUserData?.profile_pic) {
+        updatePayload.avatar = kickUserData.profile_pic;
+      }
+      if (Object.keys(updatePayload).length > 0) {
+        await supabase.from("users").update(updatePayload).eq("id", user.id);
       }
     }
 
@@ -71,27 +113,33 @@ router.get("/me/profile", authMiddleware, async (req, res) => {
     const profile = {
       id: user.id,
       username: user.username,
-      avatar: user.avatar,
-      bio: user.bio || "",
+      avatar: kickUserData?.profile_pic || user.avatar,
+      bio: kickUserData?.bio || user.bio || "",
       kick_id: user.kick_id,
-      puntos: user.puntos,
-      nivel: user.nivel,
+      puntos: user.puntos || 0,
+      nivel: user.nivel || 1,
       es_admin: user.es_admin || false,
-      es_suscriptor: user.es_suscriptor || false,
+      es_suscriptor: kickSubData ? true : (user.es_suscriptor || false),
+      subscription_tier: kickSubData?.tier || user.subscription_tier || null,
       es_baneado: user.es_baneado || false,
       es_muteado: user.es_muteado || false,
       insignia: user.insignia || null,
-      fecha_follow: user.fecha_follow || null,
+      fecha_follow: kickFollowData?.followed_at || kickFollowData?.created_at || user.fecha_follow || null,
       mensajes_chat: user.mensajes_chat || 0,
+      emoji_messages: user.emoji_messages || 0,
       watch_time_mins: user.watch_time_mins || 0,
       items_canjeados: user.items_canjeados || 0,
       sorteos_participados: user.sorteos_participados || 0,
       created_at: user.created_at,
       last_login: user.last_login,
+      last_seen_at: user.last_seen_at || null,
       login_count: user.login_count || 1,
       rank_position: rankPosition,
       total_users: totalUsers,
-      kick_channel: kickChannelData,
+      // Raw Kick API data for extra details
+      kick_badges: kickUserData?.badges || [],
+      kick_social_links: kickUserData?.social_links || [],
+      kick_is_following: !!kickFollowData,
     };
 
     res.json(profile);
