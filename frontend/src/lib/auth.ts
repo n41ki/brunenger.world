@@ -19,7 +19,7 @@ export function getKickAuthUrl(): string {
     state,
   });
 
-  return `https://id.kick.com/oauth/authorize?${params.toString()}`;
+  return `https://kick.com/oauth/authorize?${params.toString()}`;
 }
 
 export function setAuthToken(token: string): void {
