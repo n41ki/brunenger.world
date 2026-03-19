@@ -7,6 +7,7 @@ const { createServer } = require("http");
 const { Server } = require("socket.io");
 
 const kickEventSub = require("./bot/kickEventSub");
+// kickBot (Pusher) reemplazado por EventSub webhooks
 const authRoutes = require("./routes/auth");
 const usersRoutes = require("./routes/users");
 const shopRoutes = require("./routes/shop");
@@ -103,6 +104,6 @@ httpServer.listen(PORT, () => {
   console.log(`🚀 Brunenger World API running on port ${PORT}`);
   console.log(`📡 WebSocket server ready`);
   console.log(`🌍 Accepting connections from: ${FRONTEND_URL}`);
-  // Suscribir a eventos de Kick via EventSub (webhooks)
-  kickEventSub.subscribe();
+  // Suscribir a eventos de Kick via EventSub (webhooks oficiales)
+  setTimeout(() => kickEventSub.subscribe(), 3000);
 });
