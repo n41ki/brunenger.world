@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Home, ShoppingBag, Trophy, Gift, Radio,
-  LogOut, ChevronRight, Zap, Settings
+  LogOut, ChevronRight, Zap, Settings, User
 } from "lucide-react";
 import { fetchCurrentUser, logout } from "@/lib/auth";
 import ThemeToggle from "@/components/ui/ThemeToggle";
@@ -20,6 +20,7 @@ const LINKS = [
   { href: "/dashboard/shop",      label: "Tienda",   icon: ShoppingBag },
   { href: "/dashboard/rankings",  label: "Rankings", icon: Trophy     },
   { href: "/dashboard/giveaways", label: "Sorteos",  icon: Gift       },
+  { href: "/dashboard/profile",   label: "Mi Usuario", icon: User     },
 ];
 
 export default function Sidebar() {
@@ -192,6 +193,7 @@ function MobileBar({ user, pathname }: { user: User | null; pathname: string }) 
     { href: "/dashboard/shop",      icon: ShoppingBag },
     { href: "/dashboard/rankings",  icon: Trophy     },
     { href: "/dashboard/giveaways", icon: Gift       },
+    { href: "/dashboard/profile",   icon: User       },
   ];
   return (
     <>

@@ -9,7 +9,6 @@ const KICK_CLIENT_SECRET = process.env.KICK_CLIENT_SECRET || "1234951294e39c1c06
 const KICK_REDIRECT_URI = process.env.KICK_REDIRECT_URI || "http://localhost:3000/auth/callback";
 
 // POST /api/auth/kick/callback
-// Exchanges authorization code for access token and creates/updates user
 router.post("/kick/callback", async (req, res) => {
   const { code, codeVerifier } = req.body;
   if (!code) return res.status(400).json({ error: "Código de autorización requerido" });
@@ -30,7 +29,7 @@ router.post("/kick/callback", async (req, res) => {
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
 
-    const { access_token } = tokenRes.data;
+    const { access_token, refresh_token, expires_in } = tokenRes.data;
 
     // Get user info from Kick API
     const userRes = await axios.get("https://api.kick.com/public/v1/users", {
@@ -44,6 +43,7 @@ router.post("/kick/callback", async (req, res) => {
     const kickId = String(kickUser.user_id || kickUser.id);
     const username = kickUser.username || kickUser.name;
     const avatar = kickUser.profile_pic || kickUser.profile_picture || kickUser.avatar || "";
+    const bio = kickUser.bio || "";
 
     // Upsert user in Supabase
     const { data: existingUser, error: fetchErr } = await supabase
@@ -53,6 +53,8 @@ router.post("/kick/callback", async (req, res) => {
       .single();
 
     let dbUser;
+    const now = new Date().toISOString();
+
     if (fetchErr || !existingUser) {
       // Create new user
       const { data: newUser, error: insertErr } = await supabase
@@ -61,8 +63,14 @@ router.post("/kick/callback", async (req, res) => {
           kick_id: kickId,
           username,
           avatar,
+          bio,
           puntos: 0,
           nivel: 1,
+          kick_access_token: access_token,
+          kick_refresh_token: refresh_token || null,
+          kick_token_expires: expires_in ? new Date(Date.now() + expires_in * 1000).toISOString() : null,
+          last_login: now,
+          login_count: 1,
         })
         .select()
         .single();
@@ -70,10 +78,20 @@ router.post("/kick/callback", async (req, res) => {
       if (insertErr) throw new Error(insertErr.message);
       dbUser = newUser;
     } else {
-      // Update existing user
+      // Update existing user — save new tokens and login info
       const { data: updatedUser, error: updateErr } = await supabase
         .from("users")
-        .update({ username, avatar, updated_at: new Date().toISOString() })
+        .update({
+          username,
+          avatar,
+          bio,
+          kick_access_token: access_token,
+          kick_refresh_token: refresh_token || existingUser.kick_refresh_token,
+          kick_token_expires: expires_in ? new Date(Date.now() + expires_in * 1000).toISOString() : null,
+          last_login: now,
+          login_count: (existingUser.login_count || 0) + 1,
+          updated_at: now,
+        })
         .eq("kick_id", kickId)
         .select()
         .single();
@@ -89,7 +107,13 @@ router.post("/kick/callback", async (req, res) => {
       username: dbUser.username,
     });
 
-    res.json({ token, user: dbUser });
+    // Return user without sensitive tokens
+    const safeUser = { ...dbUser };
+    delete safeUser.kick_access_token;
+    delete safeUser.kick_refresh_token;
+    delete safeUser.kick_token_expires;
+
+    res.json({ token, user: safeUser });
   } catch (err) {
     const detail = err.response?.data || err.message;
     console.error("Auth error:", JSON.stringify(detail));
@@ -100,7 +124,7 @@ router.post("/kick/callback", async (req, res) => {
   }
 });
 
-// GET /api/auth/logout
+// POST /api/auth/logout
 router.post("/logout", (req, res) => {
   res.json({ message: "Sesión cerrada correctamente" });
 });

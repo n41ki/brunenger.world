@@ -27,6 +27,7 @@ export const getStreamStatus = () => api.get("/stream/status");
 
 // ─── User ──────────────────────────────────────────────────────────────────
 export const getUserProfile = () => api.get("/users/me");
+export const getMyProfile = () => api.get("/users/me/profile");
 export const updatePoints = (userId: string, points: number) =>
   api.post("/users/points", { userId, points });
 
