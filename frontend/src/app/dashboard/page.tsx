@@ -6,7 +6,6 @@ import Image from "next/image";
 import { fetchCurrentUser } from "@/lib/auth";
 import { getStreamStatus } from "@/lib/api";
 import { Zap, ShoppingBag, Trophy, Gift, Tv, Play, TrendingUp, MessageSquare } from "lucide-react";
-import LightningIcon from "@/components/ui/LightningIcon";
 
 interface User  { username: string; avatar: string; puntos: number; nivel: number }
 interface Stream { isLive: boolean; viewers?: number; title?: string }
@@ -37,13 +36,13 @@ export default function DashboardPage() {
           {user?.avatar && (
             <div style={{ position: "relative" }}>
               <Image src={user.avatar} alt={user.username} width={48} height={48}
-                style={{ borderRadius: "50%", border: "1.5px solid var(--border2)" }} />
+                style={{ borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.12)" }} />
               {stream.isLive && <span className="live-dot" style={{ position: "absolute", bottom: "0", right: "0", width: "10px", height: "10px", border: "2px solid var(--bg)" }} />}
             </div>
           )}
           <div>
             <p className="label" style={{ marginBottom: "3px" }}>Bienvenido de vuelta</p>
-            <h1 style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "26px", color: "var(--t1)", lineHeight: 1.1 }}>
+            <h1 style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "26px", color: "#fff", lineHeight: 1.1 }}>
               {user?.username || "..."}
             </h1>
           </div>
@@ -52,12 +51,12 @@ export default function DashboardPage() {
         <div style={{
           display: "flex", alignItems: "center", gap: "10px",
           padding: "12px 18px", borderRadius: "12px",
-          background: "var(--orange-bg)", border: "1px solid var(--orange-bd)"
+          background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)"
         }}>
-          <span className="bolt"><LightningIcon size={16} /></span>
+          <Zap size={16} style={{ color: "#fff" }} />
           <div>
-            <p style={{ fontSize: "10px", color: "var(--orange)", fontWeight: 700, letterSpacing: "0.1em" }}>PUNTOS</p>
-            <p style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "22px", color: "var(--orange)", lineHeight: 1 }}>
+            <p style={{ fontSize: "10px", color: "var(--t3)", fontWeight: 700, letterSpacing: "0.1em" }}>PUNTOS</p>
+            <p style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "22px", color: "#fff", lineHeight: 1 }}>
               {(user?.puntos || 0).toLocaleString()}
             </p>
           </div>
@@ -70,15 +69,15 @@ export default function DashboardPage() {
           style={{
             display: "flex", alignItems: "center", justifyContent: "space-between",
             padding: "14px 18px", borderRadius: "12px", marginBottom: "24px",
-            background: "var(--orange-bg)", border: "1px solid var(--orange-bd)"
+            background: "rgba(83,252,24,0.06)", border: "1px solid rgba(83,252,24,0.2)"
           }}>
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <span className="live-dot" />
-            <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--orange)", letterSpacing: "0.06em" }}>EN VIVO</span>
+            <span style={{ fontSize: "13px", fontWeight: 700, color: "#53FC18", letterSpacing: "0.06em" }}>EN VIVO</span>
             {stream.title && <span style={{ fontSize: "13px", color: "var(--t4)" }}>— {stream.title}</span>}
           </div>
           <Link href="/dashboard/stream">
-            <button className="btn btn-primary btn-sm">
+            <button className="btn btn-sm" style={{ background: "#53FC18", color: "#000" }}>
               <Play size={11} /> Ver stream
             </button>
           </Link>
@@ -91,7 +90,7 @@ export default function DashboardPage() {
           <motion.div key={c.href} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
             <Link href={c.href} style={{ textDecoration: "none" }}>
               <div className="card card-hover" style={{ padding: "20px", cursor: "pointer" }}>
-                <c.icon size={20} style={{ color: "var(--orange)", marginBottom: "12px" }} />
+                <c.icon size={20} style={{ color: "#fff", marginBottom: "12px" }} />
                 <p style={{ fontWeight: 600, color: "var(--t1)", fontSize: "13px", marginBottom: "3px" }}>{c.label}</p>
                 <p style={{ fontSize: "12px", color: "var(--t3)" }}>{c.desc}</p>
               </div>

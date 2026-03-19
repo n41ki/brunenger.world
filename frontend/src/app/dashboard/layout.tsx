@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import { isAuthenticated } from "@/lib/auth";
 import Sidebar from "@/components/layout/Sidebar";
 
+const YT_ID = "yzmLLn-InkM";
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [ok, setOk] = useState(false);
@@ -15,17 +17,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!ok) return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div style={{ width: "28px", height: "28px", borderRadius: "50%", border: "2px solid var(--orange-bd)", borderTopColor: "var(--orange)", animation: "spin 0.8s linear infinite" }} />
+      <div style={{ width: "28px", height: "28px", borderRadius: "50%", border: "2px solid rgba(255,255,255,0.15)", borderTopColor: "#fff", animation: "spin 0.8s linear infinite" }} />
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
+      {/* Video background */}
+      <div className="video-bg">
+        <iframe
+          src={`https://www.youtube.com/embed/${YT_ID}?autoplay=1&mute=1&loop=1&playlist=${YT_ID}&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&playsinline=1`}
+          allow="autoplay; fullscreen"
+          title="bg"
+        />
+        <div className="video-bg-overlay" />
+      </div>
+
       <Sidebar />
-      {/* main pushes right of sidebar — sidebar width is controlled by CSS var set by Sidebar component */}
-      <main id="dashboard-content" style={{ marginLeft: "60px", minHeight: "100vh", transition: "margin-left 0.22s cubic-bezier(0.4,0,0.2,1)" }}>
-        {/* Mobile: top offset 52px + bottom offset 56px */}
+      <main id="dashboard-content" style={{ marginLeft: "60px", minHeight: "100vh", position: "relative", zIndex: 1, transition: "margin-left 0.22s cubic-bezier(0.4,0,0.2,1)" }}>
         <div className="md:hidden" style={{ height: "52px" }} />
         {children}
         <div className="md:hidden" style={{ height: "56px" }} />

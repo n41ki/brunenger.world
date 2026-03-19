@@ -5,7 +5,6 @@ import Image from "next/image";
 import { getShopItems, redeemItem } from "@/lib/api";
 import { fetchCurrentUser } from "@/lib/auth";
 import { Zap, ShoppingBag, Check, X, Search } from "lucide-react";
-import LightningIcon from "@/components/ui/LightningIcon";
 
 interface Item { id: string; nombre: string; imagen: string; costo_puntos: number; descripcion?: string; categoria?: string; disponible: boolean }
 interface User { puntos: number }
@@ -62,20 +61,18 @@ export default function ShopPage() {
             <p className="label" style={{ marginBottom: "6px" }}>Recompensas</p>
             <h1 style={{
               fontFamily: "'Poppins', sans-serif", fontWeight: 900,
-              fontSize: "36px", lineHeight: 1.1, color: "var(--t1)"
+              fontSize: "36px", lineHeight: 1.1, color: "#fff"
             }}>Tienda</h1>
           </div>
-          {/* Points display */}
           <div style={{
             display: "flex", alignItems: "center", gap: "12px",
             padding: "14px 20px", borderRadius: "14px",
-            background: "var(--orange-bg)", border: "1px solid var(--orange-bd)",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)"
+            background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
           }}>
-            <span className="bolt"><LightningIcon size={18} /></span>
+            <Zap size={18} style={{ color: "#fff" }} />
             <div>
-              <p className="label" style={{ fontSize: "10px", marginBottom: "2px", color: "var(--orange)" }}>TUS PUNTOS</p>
-              <p style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "24px", color: "var(--orange)", lineHeight: 1 }}>
+              <p className="label" style={{ fontSize: "10px", marginBottom: "2px", color: "var(--t3)" }}>TUS PUNTOS</p>
+              <p style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "24px", color: "#fff", lineHeight: 1 }}>
                 {pts.toLocaleString()}
               </p>
             </div>
@@ -131,7 +128,6 @@ export default function ShopPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
               >
-                {/* Image */}
                 <div style={{ position: "relative", height: "160px", background: "var(--bg2)", overflow: "hidden" }}>
                   {item.imagen
                     ? <Image src={item.imagen} alt={item.nombre} fill style={{ objectFit: "cover" }} />
@@ -139,9 +135,7 @@ export default function ShopPage() {
                         <ShoppingBag size={28} style={{ color: "var(--t4)" }} />
                       </div>
                   }
-                  {/* Gradient overlay */}
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, var(--bg1) 0%, transparent 55%)" }} />
-                  {/* Cant-afford overlay */}
                   {!canAfford && item.disponible && (
                     <div style={{
                       position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
@@ -163,7 +157,6 @@ export default function ShopPage() {
                   )}
                 </div>
 
-                {/* Body */}
                 <div style={{ padding: "16px" }}>
                   <p style={{ fontWeight: 600, fontSize: "13px", color: "var(--t1)", marginBottom: "4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {item.nombre}
@@ -176,8 +169,8 @@ export default function ShopPage() {
                   )}
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: item.descripcion ? 0 : "14px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                      <Zap size={12} style={{ color: "var(--orange)" }} />
-                      <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "15px", color: "var(--orange)" }}>
+                      <Zap size={12} style={{ color: "#fff" }} />
+                      <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "15px", color: "#fff" }}>
                         {item.costo_puntos.toLocaleString()}
                       </span>
                     </div>
@@ -198,7 +191,6 @@ export default function ShopPage() {
         </div>
       )}
 
-      {/* Toast */}
       <AnimatePresence>
         {toast && (
           <motion.div

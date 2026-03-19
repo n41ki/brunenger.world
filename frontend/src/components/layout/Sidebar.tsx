@@ -53,8 +53,9 @@ export default function Sidebar() {
     <aside style={{
       position: "fixed", top: 0, left: 0, bottom: 0,
       width: w, zIndex: 40,
-      background: "var(--bg1)",
-      borderRight: "1px solid var(--glass-border)",
+      background: "rgba(10,10,12,0.85)",
+      backdropFilter: "blur(20px)",
+      borderRight: "1px solid rgba(255,255,255,0.06)",
       display: "flex", flexDirection: "column",
       transition: "width 0.22s cubic-bezier(0.4,0,0.2,1)",
       overflow: "hidden",
@@ -62,24 +63,23 @@ export default function Sidebar() {
       {/* Logo + collapse toggle */}
       <div style={{
         height: "60px", display: "flex", alignItems: "center",
-        padding: "0 12px", borderBottom: "1px solid var(--glass-border)",
-        flexShrink: 0, position: "relative",
+        padding: "0 12px", borderBottom: "1px solid rgba(255,255,255,0.06)",
+        flexShrink: 0,
       }}>
         <Link href="/dashboard" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none", overflow: "hidden", flex: 1 }}>
           <Image src={AVATAR} alt="Brunenger" width={32} height={32}
-            style={{ borderRadius: "50%", border: "1.5px solid var(--orange-bd)", flexShrink: 0 }} />
+            style={{ borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.15)", flexShrink: 0 }} />
           {expanded && (
-            <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "14px", color: "var(--t1)", whiteSpace: "nowrap", overflow: "hidden" }}>
+            <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "14px", color: "#fff", whiteSpace: "nowrap", overflow: "hidden" }}>
               Brunenger World
             </span>
           )}
         </Link>
         <button onClick={toggle} style={{
           width: "24px", height: "24px", borderRadius: "50%",
-          background: "var(--bg3)", border: "1px solid var(--glass-border)",
+          background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)",
           display: "flex", alignItems: "center", justifyContent: "center",
           cursor: "pointer", flexShrink: 0,
-          transition: "transform 0.22s ease",
         }}>
           <ChevronRight size={12} style={{ color: "var(--t3)", transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.22s ease" }} />
         </button>
@@ -94,14 +94,14 @@ export default function Sidebar() {
             <Link key={l.href} href={l.href} title={!expanded ? l.label : undefined} style={{
               display: "flex", alignItems: "center", gap: "12px",
               padding: "10px", borderRadius: "10px",
-              color: active ? "var(--orange)" : "var(--t3)",
-              background: active ? "var(--orange-bg)" : "transparent",
-              border: active ? "1px solid var(--orange-bd)" : "1px solid transparent",
+              color: active ? "#fff" : "var(--t3)",
+              background: active ? "rgba(255,255,255,0.08)" : "transparent",
+              border: active ? "1px solid rgba(255,255,255,0.12)" : "1px solid transparent",
               textDecoration: "none",
               transition: "all 0.15s ease",
               whiteSpace: "nowrap", overflow: "hidden",
             }}
-              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = "var(--glass-bg)"; }}
+              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"; }}
               onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = "transparent"; }}
             >
               <l.icon size={16} style={{ flexShrink: 0 }} />
@@ -114,8 +114,8 @@ export default function Sidebar() {
           <Link href="/admin" title={!expanded ? "Admin" : undefined} style={{
             display: "flex", alignItems: "center", gap: "12px",
             padding: "10px", borderRadius: "10px",
-            color: pathname.startsWith("/admin") ? "var(--orange)" : "var(--t4)",
-            background: pathname.startsWith("/admin") ? "var(--orange-bg)" : "transparent",
+            color: pathname.startsWith("/admin") ? "#fff" : "var(--t4)",
+            background: pathname.startsWith("/admin") ? "rgba(255,255,255,0.08)" : "transparent",
             border: "1px solid transparent", textDecoration: "none",
             transition: "all 0.15s ease", whiteSpace: "nowrap", overflow: "hidden",
           }}>
@@ -126,18 +126,18 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div style={{ padding: "10px 8px", borderTop: "1px solid var(--glass-border)", display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={{ padding: "10px 8px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", gap: "6px" }}>
         {/* Points */}
         {user && expanded && (
           <div style={{
             display: "flex", alignItems: "center", gap: "8px",
             padding: "10px 12px", borderRadius: "10px",
-            background: "var(--orange-bg)", border: "1px solid var(--orange-bd)"
+            background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)"
           }}>
-            <Zap size={13} style={{ color: "var(--orange)", flexShrink: 0 }} />
+            <Zap size={13} style={{ color: "#fff", flexShrink: 0 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: "10px", color: "var(--orange)", fontWeight: 700, letterSpacing: "0.1em" }}>PUNTOS</p>
-              <p style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "16px", color: "var(--orange)", lineHeight: 1 }}>
+              <p style={{ fontSize: "10px", color: "var(--t3)", fontWeight: 700, letterSpacing: "0.1em" }}>PUNTOS</p>
+              <p style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "16px", color: "#fff", lineHeight: 1 }}>
                 {user.puntos.toLocaleString()}
               </p>
             </div>
@@ -147,9 +147,9 @@ export default function Sidebar() {
           <div title={`${user.puntos} puntos`} style={{
             display: "flex", alignItems: "center", justifyContent: "center",
             padding: "10px", borderRadius: "10px",
-            background: "var(--orange-bg)", border: "1px solid var(--orange-bd)"
+            background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)"
           }}>
-            <Zap size={14} style={{ color: "var(--orange)" }} />
+            <Zap size={14} style={{ color: "#fff" }} />
           </div>
         )}
 
@@ -158,14 +158,14 @@ export default function Sidebar() {
           <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "6px 4px" }}>
             {user.avatar && (
               <Image src={user.avatar} alt={user.username} width={28} height={28}
-                style={{ borderRadius: "50%", border: "1.5px solid var(--border2)", flexShrink: 0 }} />
+                style={{ borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.12)", flexShrink: 0 }} />
             )}
             <p style={{ flex: 1, fontSize: "12px", fontWeight: 600, color: "var(--t2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {user.username}
             </p>
             <ThemeToggle />
             <button onClick={() => logout()} title="Cerrar sesión"
-              style={{ width: "28px", height: "28px", borderRadius: "8px", background: "var(--glass-bg)", border: "1px solid var(--glass-border)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
+              style={{ width: "28px", height: "28px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
               <LogOut size={12} style={{ color: "#f87171" }} />
             </button>
           </div>
@@ -198,18 +198,19 @@ function MobileBar({ user, pathname }: { user: User | null; pathname: string }) 
       {/* Top bar on mobile */}
       <div style={{
         position: "fixed", top: 0, left: 0, right: 0, height: "52px", zIndex: 45,
-        background: "var(--bg1)", borderBottom: "1px solid var(--glass-border)",
+        background: "rgba(10,10,12,0.9)", backdropFilter: "blur(16px)",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
         display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 16px"
       }}>
         <Link href="/dashboard" style={{ display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
-          <Image src={AVATAR} alt="Brunenger" width={26} height={26} style={{ borderRadius: "50%", border: "1.5px solid var(--orange-bd)" }} />
-          <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "13px", color: "var(--t1)" }}>Brunenger World</span>
+          <Image src={AVATAR} alt="Brunenger" width={26} height={26} style={{ borderRadius: "50%", border: "1.5px solid rgba(255,255,255,0.15)" }} />
+          <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "13px", color: "#fff" }}>Brunenger World</span>
         </Link>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           {user && (
             <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <Zap size={12} style={{ color: "var(--orange)" }} />
-              <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "13px", color: "var(--orange)" }}>{user.puntos.toLocaleString()}</span>
+              <Zap size={12} style={{ color: "#fff" }} />
+              <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "13px", color: "#fff" }}>{user.puntos.toLocaleString()}</span>
             </div>
           )}
           <ThemeToggle />
@@ -218,7 +219,8 @@ function MobileBar({ user, pathname }: { user: User | null; pathname: string }) 
       {/* Bottom nav */}
       <div style={{
         position: "fixed", bottom: 0, left: 0, right: 0, height: "56px", zIndex: 45,
-        background: "var(--bg1)", borderTop: "1px solid var(--glass-border)",
+        background: "rgba(10,10,12,0.9)", backdropFilter: "blur(16px)",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
         display: "flex", alignItems: "center",
       }}>
         {links.map(l => {
@@ -227,7 +229,7 @@ function MobileBar({ user, pathname }: { user: User | null; pathname: string }) 
           return (
             <Link key={l.href} href={l.href} style={{
               flex: 1, display: "flex", justifyContent: "center", alignItems: "center", height: "100%",
-              color: active ? "var(--orange)" : "var(--t4)", textDecoration: "none",
+              color: active ? "#fff" : "var(--t4)", textDecoration: "none",
             }}>
               <l.icon size={18} />
             </Link>

@@ -36,7 +36,7 @@ export default function RankingsPage() {
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: "28px" }}>
         <p className="label" style={{ marginBottom: "6px" }}>Comunidad</p>
-        <h1 style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 900, fontSize: "32px", color: "var(--t1)", lineHeight: 1 }}>
+        <h1 style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 900, fontSize: "32px", color: "#fff", lineHeight: 1 }}>
           Rankings
         </h1>
       </motion.div>
@@ -49,10 +49,10 @@ export default function RankingsPage() {
               display: "flex", alignItems: "center", gap: "8px",
               padding: "8px 18px", borderRadius: "999px",
               fontWeight: 600, fontSize: "13px", cursor: "pointer",
-              background: tab === t.id ? "var(--orange)" : "var(--bg2)",
-              color: tab === t.id ? "#fff" : "var(--t3)",
+              background: tab === t.id ? "#fff" : "var(--bg2)",
+              color: tab === t.id ? "#000" : "var(--t3)",
               border: tab === t.id ? "none" : "1px solid var(--border)",
-              boxShadow: tab === t.id ? "0 4px 12px rgba(249,115,22,0.3)" : "none",
+              boxShadow: tab === t.id ? "0 4px 12px rgba(255,255,255,0.1)" : "none",
               transition: "all 0.18s ease",
             }}>
             <t.icon size={13} />
@@ -62,9 +62,9 @@ export default function RankingsPage() {
       </div>
 
       {/* Table card */}
-      <div style={{ background: "var(--bg1)", border: "1px solid var(--glass-border)", borderRadius: "16px", overflow: "hidden" }}>
-        {/* Search bar inside card */}
-        <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--glass-border)", display: "flex", alignItems: "center", gap: "10px" }}>
+      <div style={{ background: "rgba(14,14,18,0.7)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", overflow: "hidden" }}>
+        {/* Search bar */}
+        <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", gap: "10px" }}>
           <div style={{ flex: 1, maxWidth: "280px", position: "relative" }}>
             <Search size={13} style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: "var(--t4)" }} />
             <input className="input" placeholder="Buscar usuario..."
@@ -76,7 +76,7 @@ export default function RankingsPage() {
         {/* Table header */}
         <div style={{
           display: "grid", gridTemplateColumns: "48px 1fr 120px",
-          padding: "10px 20px", borderBottom: "1px solid var(--glass-border)",
+          padding: "10px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)",
           fontSize: "11px", fontWeight: 700, color: "var(--t4)", letterSpacing: "0.1em", textTransform: "uppercase"
         }}>
           <span>#</span>
@@ -106,36 +106,33 @@ export default function RankingsPage() {
                   style={{
                     display: "grid", gridTemplateColumns: "48px 1fr 120px",
                     padding: "12px 20px", alignItems: "center",
-                    borderBottom: "1px solid var(--glass-border)",
-                    background: isTop ? "var(--glass-bg)" : "transparent",
+                    borderBottom: "1px solid rgba(255,255,255,0.04)",
+                    background: isTop ? "rgba(255,255,255,0.03)" : "transparent",
                     transition: "background 0.15s",
                   }}
-                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "var(--glass-bg)"}
-                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = isTop ? "var(--glass-bg)" : "transparent"}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = isTop ? "rgba(255,255,255,0.03)" : "transparent"}
                 >
-                  {/* Position */}
-                  <span style={{ textAlign: "center", fontSize: isTop ? "16px" : "13px", fontWeight: 700, color: isTop ? "var(--orange)" : "var(--t4)" }}>
+                  <span style={{ textAlign: "center", fontSize: isTop ? "16px" : "13px", fontWeight: 700, color: isTop ? "#fff" : "var(--t4)" }}>
                     {POS_ICON[i] ?? i + 1}
                   </span>
 
-                  {/* User */}
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
-                    <div style={{ width: "32px", height: "32px", borderRadius: "50%", overflow: "hidden", flexShrink: 0, background: "var(--bg3)", border: "1px solid var(--border)" }}>
+                    <div style={{ width: "32px", height: "32px", borderRadius: "50%", overflow: "hidden", flexShrink: 0, background: "var(--bg3)", border: "1px solid rgba(255,255,255,0.08)" }}>
                       {u.avatar
                         ? <Image src={u.avatar} alt={u.username} width={32} height={32} style={{ objectFit: "cover" }} />
                         : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700, color: "var(--t4)" }}>{u.username[0]?.toUpperCase()}</div>
                       }
                     </div>
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ fontSize: "13px", fontWeight: 600, color: isTop ? "var(--t1)" : "var(--t2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <p style={{ fontSize: "13px", fontWeight: 600, color: isTop ? "#fff" : "var(--t2)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {u.username}
                       </p>
                       <p style={{ fontSize: "11px", color: "var(--t4)" }}>Nivel {u.nivel}</p>
                     </div>
                   </div>
 
-                  {/* Points */}
-                  <p style={{ textAlign: "right", fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "14px", color: isTop ? "var(--orange)" : "var(--t3)" }}>
+                  <p style={{ textAlign: "right", fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "14px", color: isTop ? "#fff" : "var(--t3)" }}>
                     {u.puntos?.toLocaleString()}
                   </p>
                 </motion.div>
