@@ -48,65 +48,95 @@ router.get("/me/profile", authMiddleware, async (req, res) => {
     // Get total user count
     const totalUsers = allUsers ? allUsers.length : 0;
 
-    // Brunenger's channel IDs (fixed)
-    const BRUNENGER_USER_ID = 1704959;
+    // Brunenger's IDs (fixed)
+    const BRUNENGER_USER_ID    = 1704959;
+    const BRUNENGER_CHANNEL_ID = 1655879;
+    const KICK_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
 
-    // Fetch all available Kick data in parallel
-    let kickUserData = null;
-    let kickFollowData = null;
-    let kickSubData = null;
+    // Fetch all data in parallel: official API + unofficial API
+    let kickUserData    = null;
+    let kickFollowData  = null;
+    let kickSubData     = null;
+    let leaderboardData = null;
+    let channelData     = null;
 
+    const unofficialHeaders = {
+      "User-Agent": KICK_UA,
+      "Accept": "application/json",
+    };
+
+    // Unofficial API calls (no auth needed)
+    const unofficialCalls = Promise.allSettled([
+      // Channel info (followers count, etc.)
+      axios.get(`https://kick.com/api/v1/channels/brunenger`, { headers: unofficialHeaders }),
+      // Leaderboards (top gifters)
+      axios.get(`https://kick.com/api/v2/channels/brunenger/leaderboards`, { headers: unofficialHeaders }),
+    ]);
+
+    // Official API calls (need user token)
+    let officialCalls = Promise.resolve([]);
     if (user.kick_access_token) {
-      const headers = {
+      const authHeaders = {
         Authorization: `Bearer ${user.kick_access_token}`,
         "Client-Id": KICK_CLIENT_ID,
         "Accept": "application/json",
       };
-
-      const [userRes, followRes, subRes] = await Promise.allSettled([
-        // Own Kick user info (badges, bio, etc.)
-        axios.get("https://api.kick.com/public/v1/users", { headers }),
-
-        // Follow status for Brunenger's channel
+      officialCalls = Promise.allSettled([
+        axios.get("https://api.kick.com/public/v1/users", { headers: authHeaders }),
         axios.get("https://api.kick.com/public/v1/channels/followed", {
-          headers,
+          headers: authHeaders,
           params: { broadcaster_user_id: BRUNENGER_USER_ID },
         }),
-
-        // Subscription status on Brunenger's channel
         axios.get("https://api.kick.com/public/v1/subscriptions", {
-          headers,
+          headers: authHeaders,
           params: { broadcaster_user_id: BRUNENGER_USER_ID },
         }),
       ]);
+    }
 
-      if (userRes.status === "fulfilled") {
-        kickUserData = userRes.value.data?.data?.[0] || userRes.value.data?.data || null;
-      }
-      if (followRes.status === "fulfilled") {
-        const followList = followRes.value.data?.data || [];
-        kickFollowData = followList.find(f => String(f.broadcaster_user_id) === String(BRUNENGER_USER_ID)) || null;
-      }
-      if (subRes.status === "fulfilled") {
-        const subList = subRes.value.data?.data || [];
-        kickSubData = subList.length > 0 ? subList[0] : null;
-      }
+    const [unofficialResults, officialResults] = await Promise.all([unofficialCalls, officialCalls]);
 
-      // Update DB with fresh Kick data
-      const updatePayload = {};
-      if (kickFollowData) {
-        updatePayload.fecha_follow = kickFollowData.followed_at || kickFollowData.created_at || null;
-      }
-      if (kickSubData !== null) {
-        updatePayload.es_suscriptor = kickSubData !== null;
-        updatePayload.subscription_tier = kickSubData?.tier || null;
-      }
-      if (kickUserData?.profile_pic) {
-        updatePayload.avatar = kickUserData.profile_pic;
-      }
-      if (Object.keys(updatePayload).length > 0) {
-        await supabase.from("users").update(updatePayload).eq("id", user.id);
-      }
+    // Parse unofficial results
+    if (unofficialResults[0]?.status === "fulfilled") {
+      channelData = unofficialResults[0].value.data;
+    }
+    if (unofficialResults[1]?.status === "fulfilled") {
+      leaderboardData = unofficialResults[1].value.data;
+    }
+
+    // Parse official results
+    if (officialResults[0]?.status === "fulfilled") {
+      kickUserData = officialResults[0].value.data?.data?.[0] || null;
+    }
+    if (officialResults[1]?.status === "fulfilled") {
+      const list = officialResults[1].value.data?.data || [];
+      kickFollowData = list.find(f => String(f.broadcaster_user_id) === String(BRUNENGER_USER_ID)) || null;
+    }
+    if (officialResults[2]?.status === "fulfilled") {
+      const list = officialResults[2].value.data?.data || [];
+      kickSubData = list.length > 0 ? list[0] : null;
+    }
+
+    // Buscar posición en leaderboard de gifters
+    let leaderboardPosition = null;
+    const allTimeGifts = leaderboardData?.gifts || [];
+    const weekGifts    = leaderboardData?.gifts_week || [];
+    const monthGifts   = leaderboardData?.gifts_month || [];
+    const lbIdx = allTimeGifts.findIndex(g => String(g.user_id) === String(user.kick_id));
+    if (lbIdx !== -1) leaderboardPosition = { position: lbIdx + 1, quantity: allTimeGifts[lbIdx].quantity };
+
+    // Update DB with fresh Kick data
+    const updatePayload = {};
+    if (kickFollowData) {
+      updatePayload.fecha_follow = kickFollowData.followed_at || kickFollowData.created_at || null;
+    }
+    if (kickSubData !== null) {
+      updatePayload.es_suscriptor  = true;
+      updatePayload.subscription_tier = kickSubData?.tier || null;
+    }
+    if (kickUserData?.profile_pic) updatePayload.avatar = kickUserData.profile_pic;
+    if (Object.keys(updatePayload).length > 0) {
+      await supabase.from("users").update(updatePayload).eq("id", user.id);
     }
 
     // Return profile without sensitive tokens
@@ -136,10 +166,21 @@ router.get("/me/profile", authMiddleware, async (req, res) => {
       login_count: user.login_count || 1,
       rank_position: rankPosition,
       total_users: totalUsers,
-      // Raw Kick API data for extra details
-      kick_badges: kickUserData?.badges || [],
-      kick_social_links: kickUserData?.social_links || [],
-      kick_is_following: !!kickFollowData,
+      // Kick API extras
+      kick_badges:        kickUserData?.badges        || [],
+      kick_social_links:  kickUserData?.social_links  || [],
+      kick_is_following:  !!kickFollowData,
+      // Canal de Brunenger (datos públicos)
+      channel_followers:  channelData?.followers_count || channelData?.followers || null,
+      channel_is_live:    channelData?.livestream?.is_live || false,
+      // Leaderboard de gifters
+      leaderboard_gifter: leaderboardPosition,
+      leaderboard_week:   weekGifts.findIndex(g => String(g.user_id) === String(user.kick_id)) !== -1
+        ? { position: weekGifts.findIndex(g => String(g.user_id) === String(user.kick_id)) + 1, quantity: weekGifts.find(g => String(g.user_id) === String(user.kick_id))?.quantity }
+        : null,
+      leaderboard_month:  monthGifts.findIndex(g => String(g.user_id) === String(user.kick_id)) !== -1
+        ? { position: monthGifts.findIndex(g => String(g.user_id) === String(user.kick_id)) + 1, quantity: monthGifts.find(g => String(g.user_id) === String(user.kick_id))?.quantity }
+        : null,
     };
 
     res.json(profile);

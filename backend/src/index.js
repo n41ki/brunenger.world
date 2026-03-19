@@ -6,7 +6,7 @@ const rateLimit = require("express-rate-limit");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 
-const kickBot = require("./bot/kickBot");
+const kickEventSub = require("./bot/kickEventSub");
 const authRoutes = require("./routes/auth");
 const usersRoutes = require("./routes/users");
 const shopRoutes = require("./routes/shop");
@@ -14,6 +14,7 @@ const rankingsRoutes = require("./routes/rankings");
 const streamRoutes = require("./routes/stream");
 const { router: giveawaysRouter, setIO } = require("./routes/giveaways");
 const adminRoutes = require("./routes/admin");
+const { router: webhookRouter, setIO: setWebhookIO } = require("./routes/webhook");
 
 const app = express();
 const httpServer = createServer(app);
@@ -31,6 +32,7 @@ const io = new Server(httpServer, {
 });
 
 setIO(io);
+setWebhookIO(io);
 
 io.on("connection", (socket) => {
   console.log(`🔌 Client connected: ${socket.id}`);
@@ -44,8 +46,15 @@ app.use(helmet({ crossOriginEmbedderPolicy: false }));
 app.use(cors({
   origin: FRONTEND_URL,
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
 }));
+
+// Guardar raw body para verificación de firma de webhooks
+app.use((req, res, next) => {
+  let raw = "";
+  req.on("data", chunk => { raw += chunk; });
+  req.on("end", () => { req.rawBody = raw; next(); });
+});
 app.use(express.json());
 
 // Rate limiting
@@ -56,7 +65,6 @@ const limiter = rateLimit({
 });
 app.use("/api/", limiter);
 
-// Stricter limit for auth
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
@@ -65,6 +73,7 @@ const authLimiter = rateLimit({
 app.use("/api/auth/", authLimiter);
 
 // ─── Routes ───────────────────────────────────────────────────────────────
+app.use("/webhook", webhookRouter);   // Kick EventSub webhooks (no rate limit)
 app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/shop", shopRoutes);
@@ -94,5 +103,6 @@ httpServer.listen(PORT, () => {
   console.log(`🚀 Brunenger World API running on port ${PORT}`);
   console.log(`📡 WebSocket server ready`);
   console.log(`🌍 Accepting connections from: ${FRONTEND_URL}`);
-  kickBot.connect(io);
+  // Suscribir a eventos de Kick via EventSub (webhooks)
+  kickEventSub.subscribe();
 });
