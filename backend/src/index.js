@@ -16,7 +16,7 @@ const { router: giveawaysRouter, setIO } = require("./routes/giveaways");
 const app = express();
 const httpServer = createServer(app);
 
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+const FRONTEND_URL = (process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/$/, "").trim();
 const PORT = process.env.PORT || 3001;
 
 // ─── Socket.IO ────────────────────────────────────────────────────────────
