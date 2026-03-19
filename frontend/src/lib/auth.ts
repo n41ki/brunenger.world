@@ -23,7 +23,7 @@ async function sha256(plain: string): Promise<ArrayBuffer> {
 function base64UrlEncode(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   let str = "";
-  for (const byte of bytes) str += String.fromCharCode(byte);
+  bytes.forEach((byte) => { str += String.fromCharCode(byte); });
   return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
 
