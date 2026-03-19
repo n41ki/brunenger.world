@@ -12,6 +12,7 @@ const shopRoutes = require("./routes/shop");
 const rankingsRoutes = require("./routes/rankings");
 const streamRoutes = require("./routes/stream");
 const { router: giveawaysRouter, setIO } = require("./routes/giveaways");
+const adminRoutes = require("./routes/admin");
 
 const app = express();
 const httpServer = createServer(app);
@@ -69,6 +70,7 @@ app.use("/api/shop", shopRoutes);
 app.use("/api/rankings", rankingsRoutes);
 app.use("/api/stream", streamRoutes);
 app.use("/api/giveaways", giveawaysRouter);
+app.use("/api/admin", adminRoutes);
 
 // Health check
 app.get("/health", (req, res) => {

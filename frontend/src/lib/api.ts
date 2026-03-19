@@ -30,4 +30,22 @@ export const getUserProfile = () => api.get("/users/me");
 export const updatePoints = (userId: string, points: number) =>
   api.post("/users/points", { userId, points });
 
+// ─── Admin ─────────────────────────────────────────────────────────────────
+function adminApi(key: string) {
+  return axios.create({
+    baseURL: `${BACKEND_URL}/api/admin`,
+    headers: { "x-admin-key": key },
+  });
+}
+
+export const adminGetStats     = (key: string) => adminApi(key).get("/stats");
+export const adminGetItems     = (key: string) => adminApi(key).get("/items");
+export const adminCreateItem   = (key: string, data: object) => adminApi(key).post("/items", data);
+export const adminUpdateItem   = (key: string, id: string, data: object) => adminApi(key).put(`/items/${id}`, data);
+export const adminDeleteItem   = (key: string, id: string) => adminApi(key).delete(`/items/${id}`);
+export const adminGetGiveaways = (key: string) => adminApi(key).get("/giveaways");
+export const adminCreateGiveaway = (key: string, data: object) => adminApi(key).post("/giveaways", data);
+export const adminDrawWinner   = (key: string, id: string) => adminApi(key).post(`/giveaways/${id}/draw`);
+export const adminDeleteGiveaway = (key: string, id: string) => adminApi(key).delete(`/giveaways/${id}`);
+
 export default api;

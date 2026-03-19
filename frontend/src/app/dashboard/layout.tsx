@@ -23,10 +23,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div style={{ background: "var(--bg)", minHeight: "100vh" }}>
       <Sidebar />
-      <main className="dashboard-main" style={{ paddingTop: "0" }}>
-        {/* Mobile top offset */}
-        <div className="md:hidden" style={{ height: "56px" }} />
+      {/* main pushes right of sidebar — sidebar width is controlled by CSS var set by Sidebar component */}
+      <main id="dashboard-content" style={{ marginLeft: "60px", minHeight: "100vh", transition: "margin-left 0.22s cubic-bezier(0.4,0,0.2,1)" }}>
+        {/* Mobile: top offset 52px + bottom offset 56px */}
+        <div className="md:hidden" style={{ height: "52px" }} />
         {children}
+        <div className="md:hidden" style={{ height: "56px" }} />
       </main>
     </div>
   );

@@ -160,4 +160,6 @@ router.post("/", authMiddleware, async (req, res) => {
   }
 });
 
-module.exports = { router, setIO };
+function getIO() { return io; }
+
+module.exports = { router, setIO, getIO };

@@ -6,12 +6,15 @@ import { io, Socket } from "socket.io-client";
 import { getGiveaways, joinGiveaway } from "@/lib/api";
 import { fetchCurrentUser } from "@/lib/auth";
 import { Gift, Users, Trophy, Zap, Check } from "lucide-react";
-import LightningIcon from "@/components/ui/LightningIcon";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
 interface P { id: string; username: string; avatar: string }
-interface Giveaway { id: string; premio: string; descripcion?: string; estado: "activo"|"finalizado"|"pendiente"; participantes: P[]; ganador?: P }
+interface Giveaway {
+  id: string; premio: string; descripcion?: string; imagen?: string;
+  estado: "activo" | "finalizado" | "pendiente";
+  participantes: P[]; ganador?: P
+}
 interface User { id: string }
 
 export default function GiveawaysPage() {
@@ -41,120 +44,155 @@ export default function GiveawaysPage() {
 
   const join = async (id: string) => {
     setJoining(id);
-    try { await joinGiveaway(id); load(); } catch {} finally { setJoining(null); }
+    try { await joinGiveaway(id); load(); } catch { /* ignore */ } finally { setJoining(null); }
   };
 
   const isIn = (g: Giveaway) => user && g.participantes.some(p => p.id === user.id);
 
   return (
-    <div className="max-w-3xl mx-auto px-5 py-10">
+    <div style={{ padding: "32px 28px", maxWidth: "1200px" }}>
 
-      <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <div className="flex items-center gap-2.5 mb-1">
-          <Gift size={18} className="accent" />
-          <h1 className="display text-[36px] tracking-widest text-white">SORTEOS</h1>
-        </div>
-        <p className="text-[13px] text-[#444]">Participa y gana premios exclusivos</p>
+      {/* Header */}
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: "32px", textAlign: "center" }}>
+        <h1 style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 900, fontSize: "36px", color: "var(--t1)", marginBottom: "8px" }}>
+          Sorteos
+        </h1>
+        <p style={{ fontSize: "14px", color: "var(--t3)", maxWidth: "460px", margin: "0 auto" }}>
+          Debajo se encuentran los sorteos en los que puedes participar con tus puntos.
+        </p>
       </motion.div>
 
       {/* Winner overlay */}
       <AnimatePresence>
         {winner && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)" }}
             onClick={() => setWinner(null)}>
-            <motion.div initial={{ scale: 0.85, y: 16 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.85 }}
+            <motion.div initial={{ scale: 0.85, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.85 }}
               transition={{ type: "spring", stiffness: 160 }}
-              className="card glow-box rounded-2xl px-10 py-10 text-center max-w-xs mx-4">
-              <span className="bolt inline-block mb-4"><LightningIcon size={32} /></span>
-              <p className="label mb-1">Premio</p>
-              <p className="text-[13px] font-semibold accent mb-5">{winner.prize}</p>
+              style={{ padding: "40px", borderRadius: "20px", textAlign: "center", maxWidth: "320px", margin: "0 16px", background: "var(--bg1)", border: "1px solid var(--orange-bd)", boxShadow: "var(--orange-glow)" }}>
+              <p style={{ fontSize: "28px", marginBottom: "16px" }}>🏆</p>
+              <p className="label" style={{ marginBottom: "6px" }}>Premio</p>
+              <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--orange)", marginBottom: "20px" }}>{winner.prize}</p>
               {winner.user.avatar && (
                 <Image src={winner.user.avatar} alt={winner.user.username} width={64} height={64}
-                  className="rounded-full mx-auto mb-3 border-2 border-[rgba(249,115,22,0.4)]" />
+                  style={{ borderRadius: "50%", margin: "0 auto 12px", display: "block", border: "2px solid var(--orange-bd)" }} />
               )}
-              <p className="display text-[28px] tracking-widest text-white">{winner.user.username}</p>
-              <p className="text-[11px] text-[#333] mt-2">¡Felicitaciones!</p>
+              <p style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "22px", color: "var(--t1)" }}>{winner.user.username}</p>
+              <p style={{ fontSize: "12px", color: "var(--t4)", marginTop: "6px" }}>¡Felicitaciones!</p>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* List */}
+      {/* Grid */}
       {loading ? (
-        <div className="space-y-3">
-          {[1, 2].map(i => <div key={i} className="h-44 rounded-xl bg-[#111] animate-pulse" />)}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: "16px" }}>
+          {[1, 2, 3, 4].map(i => <div key={i} style={{ height: "360px", borderRadius: "16px", background: "var(--bg2)", animation: "pulse 1.5s infinite" }} />)}
         </div>
       ) : giveaways.length === 0 ? (
-        <div className="flex flex-col items-center py-24 gap-4 text-[#2A2A2A]">
-          <Gift size={36} />
-          <p className="display text-[20px] tracking-widest">SIN SORTEOS</p>
-          <p className="text-[13px]">¡Vuelve pronto!</p>
+        <div style={{ textAlign: "center", padding: "80px 0", color: "var(--t4)" }}>
+          <Gift size={40} style={{ margin: "0 auto 16px" }} />
+          <p style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700, fontSize: "20px" }}>Sin sorteos activos</p>
+          <p style={{ fontSize: "13px", marginTop: "8px" }}>¡Vuelve pronto!</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: "16px" }}>
           {giveaways.map((g, i) => (
-            <motion.div key={g.id} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.07 }}
-              className={`card p-6 ${g.estado !== "activo" ? "opacity-50" : ""}`}
-              style={g.estado === "activo" ? { borderColor: "rgba(249,115,22,0.2)" } : {}}>
-
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    {g.estado === "activo"
-                      ? <div className="flex items-center gap-2 px-2.5 py-1 rounded-full"
-                          style={{ background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.2)" }}>
-                          <span className="live-dot" style={{ width: "5px", height: "5px" }} />
-                          <span className="text-[10px] font-bold tracking-widest accent">ACTIVO</span>
-                        </div>
-                      : <span className="text-[10px] text-[#333] tracking-widest bg-[#161616] px-2.5 py-1 rounded-full border border-[rgba(255,255,255,0.07)]">FINALIZADO</span>
-                    }
-                  </div>
-                  <h3 className="display text-[22px] tracking-widest text-white">{g.premio}</h3>
-                  {g.descripcion && <p className="text-[12px] text-[#444] mt-1">{g.descripcion}</p>}
-                </div>
-                <Gift size={20} className={g.estado === "activo" ? "accent" : "text-[#2A2A2A]"} />
-              </div>
-
-              <div className="flex items-center gap-3 mb-5">
-                <div className="flex -space-x-2">
-                  {g.participantes.slice(0, 5).map(p => (
-                    <div key={p.id} className="w-6 h-6 rounded-full border-2 border-[#111] bg-[#1E1E1E] overflow-hidden">
-                      {p.avatar && <Image src={p.avatar} alt={p.username} width={24} height={24} />}
-                    </div>
-                  ))}
-                </div>
-                <div className="flex items-center gap-1.5 text-[12px] text-[#333]">
-                  <Users size={11} />
-                  {g.participantes.length} participantes
-                </div>
-              </div>
-
-              {g.estado === "finalizado" && g.ganador ? (
-                <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-[#161616] border border-[rgba(255,255,255,0.07)]">
-                  <Trophy size={13} className="text-[#444]" />
-                  <span className="text-[12px] text-[#555] font-medium">Ganador: {g.ganador.username}</span>
-                </div>
-              ) : g.estado === "activo" ? (
-                isIn(g) ? (
-                  <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-[#161616] border border-[rgba(255,255,255,0.07)] text-[12px] text-[#555]">
-                    <Check size={12} className="accent" /> Ya estás participando
-                  </div>
+            <motion.div key={g.id}
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}
+              style={{
+                borderRadius: "16px", overflow: "hidden",
+                background: "var(--bg1)", border: "1px solid var(--glass-border)",
+                display: "flex", flexDirection: "column",
+                opacity: g.estado === "finalizado" ? 0.65 : 1,
+                transition: "transform 0.2s, box-shadow 0.2s",
+              }}
+              whileHover={{ y: g.estado === "activo" ? -4 : 0 }}
+            >
+              {/* Image */}
+              <div style={{ position: "relative", height: "180px", background: "var(--bg2)", overflow: "hidden" }}>
+                {g.imagen ? (
+                  <Image src={g.imagen} alt={g.premio} fill style={{ objectFit: "cover" }} />
                 ) : (
-                  <button onClick={() => join(g.id)} disabled={joining === g.id}
-                    className="btn btn-orange w-full text-[13px]">
-                    {joining === g.id
-                      ? <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                      : <><Zap size={13} /> Participar</>
-                    }
-                  </button>
-                )
-              ) : null}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontSize: "48px" }}>🎁</div>
+                )}
+                {/* Status badge */}
+                <div style={{ position: "absolute", top: "12px", left: "12px" }}>
+                  {g.estado === "activo" ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", padding: "4px 10px", borderRadius: "6px", background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)", border: "1px solid var(--orange-bd)" }}>
+                      <span className="live-dot" style={{ width: "5px", height: "5px" }} />
+                      <span style={{ fontSize: "10px", fontWeight: 700, color: "var(--orange)", letterSpacing: "0.1em" }}>ACTIVO</span>
+                    </div>
+                  ) : (
+                    <div style={{ padding: "4px 10px", borderRadius: "6px", background: "rgba(0,0,0,0.7)", backdropFilter: "blur(8px)", border: "1px solid var(--border2)" }}>
+                      <span style={{ fontSize: "10px", fontWeight: 700, color: "var(--t4)", letterSpacing: "0.1em" }}>FINALIZADO</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Content */}
+              <div style={{ padding: "18px", flex: 1, display: "flex", flexDirection: "column" }}>
+                <h3 style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 800, fontSize: "16px", color: "var(--t1)", marginBottom: "4px", lineHeight: 1.3 }}>{g.premio}</h3>
+                {g.descripcion && (
+                  <p style={{ fontSize: "12px", color: "var(--t3)", marginBottom: "10px", lineHeight: 1.5 }}>{g.descripcion}</p>
+                )}
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "var(--t4)", marginBottom: "16px" }}>
+                  <Users size={12} />
+                  Participantes: {g.participantes.length.toLocaleString()}
+                </div>
+
+                {/* Participants avatars */}
+                {g.participantes.length > 0 && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "4px", marginBottom: "16px" }}>
+                    <div style={{ display: "flex" }}>
+                      {g.participantes.slice(0, 5).map((p, idx) => (
+                        <div key={p.id} style={{
+                          width: "24px", height: "24px", borderRadius: "50%",
+                          border: "2px solid var(--bg1)", background: "var(--bg3)",
+                          overflow: "hidden", marginLeft: idx > 0 ? "-8px" : 0, position: "relative", zIndex: 5 - idx
+                        }}>
+                          {p.avatar && <Image src={p.avatar} alt={p.username} width={24} height={24} />}
+                        </div>
+                      ))}
+                    </div>
+                    {g.participantes.length > 5 && (
+                      <span style={{ fontSize: "11px", color: "var(--t4)" }}>+{g.participantes.length - 5} más</span>
+                    )}
+                  </div>
+                )}
+
+                <div style={{ flex: 1 }} />
+
+                {/* Action */}
+                {g.estado === "finalizado" && g.ganador ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 14px", borderRadius: "10px", background: "var(--bg2)", border: "1px solid var(--border)" }}>
+                    <Trophy size={13} style={{ color: "var(--orange)" }} />
+                    <span style={{ fontSize: "12px", color: "var(--t3)" }}>Ganador: <strong style={{ color: "var(--t1)" }}>{g.ganador.username}</strong></span>
+                  </div>
+                ) : g.estado === "activo" ? (
+                  isIn(g) ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 14px", borderRadius: "10px", background: "var(--orange-bg)", border: "1px solid var(--orange-bd)" }}>
+                      <Check size={13} style={{ color: "var(--orange)" }} />
+                      <span style={{ fontSize: "12px", color: "var(--orange)", fontWeight: 600 }}>Ya estás participando</span>
+                    </div>
+                  ) : (
+                    <button onClick={() => join(g.id)} disabled={joining === g.id} className="btn btn-primary" style={{ width: "100%" }}>
+                      {joining === g.id
+                        ? <div style={{ width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
+                        : <><Zap size={13} /> Participar</>
+                      }
+                    </button>
+                  )
+                ) : null}
+              </div>
             </motion.div>
           ))}
         </div>
       )}
+
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}} @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
     </div>
   );
 }
