@@ -9,6 +9,7 @@ const supabase = require("../lib/supabase");
 // ─── Config ───────────────────────────────────────────────────────────────
 const KICK_PUSHER_KEY = "eb1d5f283081a78b932c";
 const KICK_PUSHER_CLUSTER = "us2";
+const KICK_PUSHER_HOST = "ws-us2.pusher.com";
 const CHATROOM_ID = 1648550; // brunenger chatroom ID
 const CHANNEL_SLUG = "brunenger";
 
@@ -228,7 +229,11 @@ function connect(socketIo) {
 
   const pusher = new Pusher(KICK_PUSHER_KEY, {
     cluster: KICK_PUSHER_CLUSTER,
+    wsHost: KICK_PUSHER_HOST,
+    wsPort: 443,
+    wssPort: 443,
     forceTLS: true,
+    disableStats: true,
   });
 
   pusher.connection.bind("connected", () => {
