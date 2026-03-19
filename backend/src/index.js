@@ -6,6 +6,7 @@ const rateLimit = require("express-rate-limit");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
 
+const kickBot = require("./bot/kickBot");
 const authRoutes = require("./routes/auth");
 const usersRoutes = require("./routes/users");
 const shopRoutes = require("./routes/shop");
@@ -93,4 +94,5 @@ httpServer.listen(PORT, () => {
   console.log(`🚀 Brunenger World API running on port ${PORT}`);
   console.log(`📡 WebSocket server ready`);
   console.log(`🌍 Accepting connections from: ${FRONTEND_URL}`);
+  kickBot.connect(io);
 });
