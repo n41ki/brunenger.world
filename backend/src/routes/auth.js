@@ -17,7 +17,7 @@ router.post("/kick/callback", async (req, res) => {
   try {
     // Exchange code for token
     const tokenRes = await axios.post(
-      "https://kick.com/oauth/token",
+      "https://id.kick.com/oauth2/token",
       new URLSearchParams({
         grant_type: "authorization_code",
         client_id: KICK_CLIENT_ID,
