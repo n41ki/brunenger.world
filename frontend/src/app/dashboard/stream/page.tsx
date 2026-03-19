@@ -5,130 +5,100 @@ import Image from "next/image";
 import { getStreamStatus } from "@/lib/api";
 import { ExternalLink, Users, Play } from "lucide-react";
 
-const KICK_CHANNEL = "brunenger";
-const STREAMER_AVATAR = "https://files.kick.com/images/user/1704959/profile_image/conversion/1e3e2b85-0a64-49dc-937c-b138e691d27c-fullsize.webp";
+const CHANNEL = "brunenger";
+const AVATAR   = "https://files.kick.com/images/user/1704959/profile_image/conversion/1e3e2b85-0a64-49dc-937c-b138e691d27c-fullsize.webp";
 
 interface Stream { isLive: boolean; viewers?: number; title?: string; game?: string }
 
 export default function StreamPage() {
-  const [stream, setStream] = useState<Stream>({ isLive: false });
+  const [stream,  setStream]  = useState<Stream>({ isLive: false });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getStreamStatus().then((r) => setStream(r.data)).catch(() => {}).finally(() => setLoading(false));
-    const t = setInterval(() => getStreamStatus().then((r) => setStream(r.data)).catch(() => {}), 60000);
+    getStreamStatus().then(r => setStream(r.data)).catch(() => {}).finally(() => setLoading(false));
+    const t = setInterval(() => getStreamStatus().then(r => setStream(r.data)).catch(() => {}), 60000);
     return () => clearInterval(t);
   }, []);
 
   return (
-    <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
+    <div className="max-w-5xl mx-auto px-5 py-10">
 
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+      <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-4xl tracking-widest text-white mb-1">STREAM</h1>
-            <p className="font-body text-sm text-[#555]">Canal oficial en Kick</p>
+            <div className="label mb-1">Canal oficial</div>
+            <h1 className="display text-[36px] tracking-widest text-white">STREAM</h1>
           </div>
-          <a href={`https://kick.com/${KICK_CHANNEL}`} target="_blank" rel="noopener noreferrer">
-            <motion.button
-              className="flex items-center gap-2 px-4 py-2 rounded-xl btn-ghost text-sm font-body font-medium"
-              whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-            >
-              <ExternalLink size={14} />
-              Kick
-            </motion.button>
+          <a href={`https://kick.com/${CHANNEL}`} target="_blank" rel="noopener noreferrer">
+            <button className="btn btn-outline text-[12px] px-4 py-2">
+              <ExternalLink size={12} /> Kick
+            </button>
           </a>
         </div>
       </motion.div>
 
-      {/* Two columns: stream + chat */}
       <div className="flex flex-col xl:flex-row gap-4">
 
-        {/* Stream */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex-1 rounded-2xl overflow-hidden border border-white/6 bg-[#111] flex flex-col"
-        >
-          {/* Channel bar */}
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/5">
+        {/* Player */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          className="flex-1 card overflow-hidden">
+          {/* Bar */}
+          <div className="flex items-center justify-between px-5 py-3 border-b border-[rgba(255,255,255,0.07)]">
             <div className="flex items-center gap-3">
-              <Image src={STREAMER_AVATAR} alt="Brunenger" width={32} height={32}
-                className="rounded-full border border-white/10" />
+              <Image src={AVATAR} alt="Brunenger" width={30} height={30}
+                className="rounded-full border border-[rgba(255,255,255,0.08)]" />
               <div>
-                <p className="font-body font-semibold text-sm text-white">Brunenger</p>
-                {stream.title && <p className="text-xs text-[#555] truncate max-w-[220px]">{stream.title}</p>}
+                <p className="text-[13px] font-semibold text-white">Brunenger</p>
+                {stream.title && <p className="text-[11px] text-[#444] truncate max-w-[200px]">{stream.title}</p>}
               </div>
             </div>
             <div className="flex items-center gap-3">
               {stream.viewers && (
-                <div className="flex items-center gap-1.5 text-xs font-body text-[#555]">
-                  <Users size={12} />
-                  {stream.viewers.toLocaleString()}
+                <div className="flex items-center gap-1 text-[12px] text-[#444]">
+                  <Users size={11} /> {stream.viewers.toLocaleString()}
                 </div>
               )}
               {stream.isLive ? (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FF6B00]/10 border border-[#FF6B00]/30">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00] live-dot" />
-                  <span className="text-xs font-body font-bold text-[#FF6B00] tracking-wider">EN VIVO</span>
+                <div className="flex items-center gap-2 px-3 py-1 rounded-full"
+                  style={{ background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.2)" }}>
+                  <span className="live-dot" style={{ width: "6px", height: "6px" }} />
+                  <span className="text-[11px] font-bold tracking-widest accent">EN VIVO</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#444]" />
-                  <span className="text-xs font-body text-[#444]">OFFLINE</span>
-                </div>
+                <span className="text-[11px] text-[#333]">OFFLINE</span>
               )}
             </div>
           </div>
 
-          {/* Player */}
+          {/* Iframe */}
           <div className="relative bg-[#0B0B0B]" style={{ aspectRatio: "16/9" }}>
             {loading ? (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-8 h-8 rounded-full border-2 border-[#FF6B00]/30 border-t-[#FF6B00] animate-spin" />
+                <div className="w-7 h-7 rounded-full border-2 border-[rgba(249,115,22,0.2)] border-t-[#F97316] animate-spin" />
               </div>
             ) : (
-              <iframe
-                src={`https://player.kick.com/${KICK_CHANNEL}?autoplay=true&muted=false`}
-                className="w-full h-full absolute inset-0"
-                allowFullScreen
-                allow="autoplay; fullscreen"
-                title="Brunenger Stream"
-              />
+              <iframe src={`https://player.kick.com/${CHANNEL}?autoplay=true`}
+                className="absolute inset-0 w-full h-full" allowFullScreen allow="autoplay; fullscreen" title="Stream" />
             )}
           </div>
 
-          {/* Bottom bar */}
-          <div className="px-5 py-3 border-t border-white/5">
-            <a href={`https://kick.com/${KICK_CHANNEL}`} target="_blank" rel="noopener noreferrer">
-              <button className="flex items-center gap-2 w-full justify-center py-2.5 rounded-xl btn-ghost text-sm font-body font-medium">
-                <Play size={13} />
-                Abrir en Kick
-              </button>
+          {/* Footer */}
+          <div className="px-5 py-3 border-t border-[rgba(255,255,255,0.07)]">
+            <a href={`https://kick.com/${CHANNEL}`} target="_blank" rel="noopener noreferrer">
+              <button className="btn btn-outline w-full text-[12px]"><Play size={11} />Abrir en Kick</button>
             </a>
           </div>
         </motion.div>
 
         {/* Chat */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="w-full xl:w-80 rounded-2xl overflow-hidden border border-white/6 bg-[#111] flex flex-col"
-          style={{ minHeight: "460px" }}
-        >
-          <div className="px-5 py-3.5 border-b border-white/5">
-            <p className="font-body font-semibold text-sm text-white">Chat en vivo</p>
+        <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}
+          className="w-full xl:w-72 card overflow-hidden flex flex-col" style={{ minHeight: "420px" }}>
+          <div className="px-5 py-3 border-b border-[rgba(255,255,255,0.07)]">
+            <p className="text-[13px] font-semibold text-white">Chat en vivo</p>
           </div>
           <div className="flex-1">
-            <iframe
-              src={`https://kick.com/${KICK_CHANNEL}/chatroom`}
-              className="w-full h-full"
-              style={{ minHeight: "400px" }}
-              title="Chat"
-            />
+            <iframe src={`https://kick.com/${CHANNEL}/chatroom`} className="w-full h-full" style={{ minHeight: "370px" }} title="Chat" />
           </div>
         </motion.div>
       </div>

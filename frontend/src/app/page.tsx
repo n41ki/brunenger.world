@@ -3,278 +3,246 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { getKickAuthUrl, isAuthenticated } from "@/lib/auth";
 import { getStreamStatus } from "@/lib/api";
-import { useRouter } from "next/navigation";
 import LightningIcon from "@/components/ui/LightningIcon";
 import Footer from "@/components/layout/Footer";
-import { Play, Users, ExternalLink, Zap, Trophy, Gift } from "lucide-react";
+import { Play, ExternalLink, Zap, Trophy, Gift, Users } from "lucide-react";
 
-const STREAMER_AVATAR = "https://files.kick.com/images/user/1704959/profile_image/conversion/1e3e2b85-0a64-49dc-937c-b138e691d27c-fullsize.webp";
-const KICK_CHANNEL = "brunenger";
+const AVATAR = "https://files.kick.com/images/user/1704959/profile_image/conversion/1e3e2b85-0a64-49dc-937c-b138e691d27c-fullsize.webp";
+const CHANNEL = "brunenger";
 
 interface Stream { isLive: boolean; viewers?: number; title?: string }
 
-export default function HomePage() {
+export default function Home() {
   const router = useRouter();
-  const [stream, setStream] = useState<Stream>({ isLive: false });
+  const [stream,  setStream]  = useState<Stream>({ isLive: false });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated()) { router.push("/dashboard"); return; }
-    getStreamStatus().then((r) => setStream(r.data)).catch(() => {});
+    getStreamStatus().then(r => setStream(r.data)).catch(() => {});
   }, [router]);
 
-  const handleLogin = async () => {
+  const login = async () => {
     setLoading(true);
-    const url = await getKickAuthUrl();
-    window.location.href = url;
+    window.location.href = await getKickAuthUrl();
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0B0B] noise">
+    <div className="min-h-screen" style={{ background: "#0B0B0B" }}>
 
-      {/* ── Navbar simple ─────────────────────── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#0B0B0B]/80 backdrop-blur-md border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 flex items-center justify-between h-16">
-          <div className="flex items-center gap-2.5">
-            <div className="lightning-glow"><LightningIcon size={20} /></div>
-            <span className="font-display text-xl tracking-widest text-white">BRUNENGER</span>
+      {/* ── Navbar ───────────────────────────── */}
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-[rgba(255,255,255,0.07)] bg-[#0B0B0B]/90 backdrop-blur-sm">
+        <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="bolt"><LightningIcon size={19} /></span>
+            <span className="display text-[17px] tracking-[0.08em]">BRUNENGER</span>
           </div>
           <div className="flex items-center gap-3">
             {stream.isLive && (
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FF6B00]/10 border border-[#FF6B00]/30">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00] live-dot" />
-                <span className="text-xs font-body font-semibold text-[#FF6B00] tracking-widest">EN VIVO</span>
-                {stream.viewers && (
-                  <span className="text-xs text-[#888]">{stream.viewers.toLocaleString()}</span>
-                )}
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full"
+                style={{ background: "rgba(249,115,22,0.1)", border: "1px solid rgba(249,115,22,0.2)" }}>
+                <span className="live-dot" />
+                <span className="text-[11px] font-semibold tracking-widest accent">EN VIVO</span>
+                {stream.viewers && <span className="text-[11px] text-[#444]">{stream.viewers.toLocaleString()}</span>}
               </div>
             )}
-            <motion.button
-              onClick={handleLogin}
-              disabled={loading}
-              className="px-5 py-2 rounded-lg btn-primary text-sm font-body font-semibold"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-            >
+            <button onClick={login} disabled={loading} className="btn btn-orange text-[13px] px-5 py-2">
               {loading ? "Conectando..." : "Iniciar sesión"}
-            </motion.button>
+            </button>
           </div>
         </div>
       </header>
 
-      {/* ── Hero + Stream ─────────────────────── */}
-      <section className="pt-16 min-h-screen flex flex-col lg:flex-row">
+      {/* ── Hero + Stream ────────────────────── */}
+      <section className="pt-14 min-h-screen flex flex-col lg:flex-row">
 
-        {/* Left — Hero text */}
-        <div className="flex-1 flex flex-col justify-center px-8 lg:px-16 xl:px-24 py-16 lg:py-0">
-          {/* Overline */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="flex items-center gap-3 mb-6"
-          >
-            <div className="h-px w-8 bg-[#FF6B00]" />
-            <span className="text-xs font-body font-semibold tracking-[0.2em] text-[#FF6B00] uppercase">
-              Comunidad oficial
-            </span>
+        {/* Left */}
+        <div className="flex-1 flex flex-col justify-center px-8 lg:px-16 xl:px-20 py-20 lg:py-0">
+
+          {/* Eyebrow */}
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+            className="flex items-center gap-3 mb-8">
+            <span className="hr-orange" />
+            <span className="label">Comunidad oficial · Kick</span>
           </motion.div>
 
           {/* Name */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.7 }}
-            className="mb-6"
-          >
-            <div className="flex items-start gap-4">
-              <div className="lightning-glow mt-2 hidden sm:block">
-                <LightningIcon size={48} />
-              </div>
-              <h1 className="font-display text-[clamp(4rem,12vw,9rem)] leading-none text-grad-white">
-                BRUNENGER
-              </h1>
-            </div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12, duration: 0.6 }}
+            className="flex items-start gap-4 mb-6">
+            <span className="bolt mt-1 hidden sm:block"><LightningIcon size={52} /></span>
+            <h1 className="display text-[clamp(5rem,14vw,10rem)] text-white leading-none glow-text">
+              BRUNENGER
+            </h1>
           </motion.div>
 
-          {/* Bio */}
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 }}
-            className="font-body text-[#555] text-lg max-w-md leading-relaxed mb-10"
-          >
-            Streamer. Jugador. Creador de comunidad.<br />
-            Únete, gana puntos y forma parte de algo grande.
+          {/* Sub */}
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}
+            className="text-[#555] text-[15px] leading-relaxed max-w-sm mb-10">
+            Streamer. Gamer. Creador de comunidad.<br />
+            Únete, acumula puntos y gana premios exclusivos.
           </motion.p>
 
           {/* CTAs */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45 }}
-            className="flex flex-wrap items-center gap-4 mb-12"
-          >
-            <motion.button
-              onClick={handleLogin}
-              disabled={loading}
-              className="flex items-center gap-2.5 px-7 py-3.5 rounded-xl btn-primary font-body font-semibold text-sm tracking-wide"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <Zap size={16} />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }}
+            className="flex flex-wrap gap-3 mb-16">
+            <button onClick={login} disabled={loading} className="btn btn-orange">
+              <Zap size={15} />
               {loading ? "Conectando..." : "Iniciar sesión con Kick"}
-            </motion.button>
-            <a href={`https://kick.com/${KICK_CHANNEL}`} target="_blank" rel="noopener noreferrer">
-              <motion.button
-                className="flex items-center gap-2 px-7 py-3.5 rounded-xl btn-ghost font-body font-semibold text-sm tracking-wide"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-              >
-                <ExternalLink size={14} />
+            </button>
+            <a href={`https://kick.com/${CHANNEL}`} target="_blank" rel="noopener noreferrer">
+              <button className="btn btn-outline">
+                <ExternalLink size={13} />
                 Ver canal
-              </motion.button>
+              </button>
             </a>
           </motion.div>
 
           {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="flex items-center gap-8"
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }}
+            className="flex gap-10">
             {[
-              { icon: Users,  value: "10K+",   label: "Comunidad" },
-              { icon: Trophy, value: "TOP",     label: "Rankings" },
-              { icon: Gift,   value: "Sorteos", label: "Activos" },
+              { icon: Users,  v: "10K+",   l: "Comunidad" },
+              { icon: Trophy, v: "Top",    l: "Rankings"  },
+              { icon: Gift,   v: "Live",   l: "Sorteos"   },
             ].map((s, i) => (
-              <div key={i} className="flex flex-col gap-1">
-                <s.icon size={16} className="text-[#444]" />
-                <span className="font-display text-lg tracking-widest text-white">{s.value}</span>
-                <span className="text-xs font-body text-[#444]">{s.label}</span>
+              <div key={i} className="flex flex-col gap-1.5">
+                <s.icon size={14} className="text-[#333]" />
+                <span className="display text-[18px] tracking-wider text-white">{s.v}</span>
+                <span className="text-[11px] text-[#333] font-medium">{s.l}</span>
               </div>
             ))}
           </motion.div>
         </div>
 
-        {/* Right — Stream panel */}
+        {/* Right — stream panel */}
         <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3, duration: 0.7 }}
-          className="w-full lg:w-[520px] xl:w-[580px] flex flex-col border-l border-white/5 bg-[#111]"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.6 }}
+          className="w-full lg:w-[500px] xl:w-[540px] border-l border-[rgba(255,255,255,0.07)] bg-[#111] flex flex-col"
+          style={{ minHeight: "460px" }}
         >
-          {/* Stream header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
+          {/* Panel header */}
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-[rgba(255,255,255,0.07)]">
             <div className="flex items-center gap-3">
-              <Image src={STREAMER_AVATAR} alt="Brunenger" width={36} height={36}
-                className="rounded-full border border-white/10" />
+              <Image src={AVATAR} alt="Brunenger" width={34} height={34}
+                className="rounded-full border border-[rgba(255,255,255,0.08)]" />
               <div>
-                <p className="font-body font-semibold text-sm text-white">Brunenger</p>
-                <p className="text-xs font-body text-[#555]">kick.com/brunenger</p>
+                <p className="text-[13px] font-semibold text-white">Brunenger</p>
+                <p className="text-[11px] text-[#444]">kick.com/brunenger</p>
               </div>
             </div>
             {stream.isLive ? (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FF6B00]/10 border border-[#FF6B00]/30">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00] live-dot" />
-                <span className="text-xs font-body font-bold text-[#FF6B00] tracking-wider">EN VIVO</span>
-                {stream.viewers && (
-                  <span className="text-xs text-[#666]">· {stream.viewers.toLocaleString()}</span>
-                )}
+              <div className="flex items-center gap-2 px-3 py-1 rounded-full"
+                style={{ background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.2)" }}>
+                <span className="live-dot" style={{ width: "6px", height: "6px" }} />
+                <span className="text-[11px] font-bold tracking-widest accent">EN VIVO</span>
+                {stream.viewers && <span className="text-[11px] text-[#444]">· {stream.viewers.toLocaleString()}</span>}
               </div>
             ) : (
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#444]" />
-                <span className="text-xs font-body text-[#444]">OFFLINE</span>
-              </div>
+              <span className="text-[11px] text-[#333] font-medium">OFFLINE</span>
             )}
           </div>
 
-          {/* Stream embed */}
-          <div className="flex-1 relative bg-[#0B0B0B]" style={{ minHeight: "320px" }}>
+          {/* Player */}
+          <div className="relative flex-1 bg-[#0B0B0B]" style={{ minHeight: "300px" }}>
             <iframe
-              src={`https://player.kick.com/${KICK_CHANNEL}?autoplay=false&muted=true`}
-              className="w-full h-full absolute inset-0"
-              style={{ minHeight: "320px" }}
-              allowFullScreen
-              allow="autoplay; fullscreen"
-              title="Brunenger Stream"
+              src={`https://player.kick.com/${CHANNEL}?autoplay=false&muted=true`}
+              className="absolute inset-0 w-full h-full"
+              allowFullScreen allow="autoplay; fullscreen"
+              title="Stream"
             />
           </div>
 
-          {/* Stream footer */}
-          <div className="px-5 py-4 border-t border-white/5 space-y-3">
-            {stream.title && (
-              <p className="text-sm font-body text-[#888] truncate">{stream.title}</p>
-            )}
-            <a href={`https://kick.com/${KICK_CHANNEL}`} target="_blank" rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg btn-ghost text-sm font-body font-medium">
-              <Play size={14} />
-              Abrir en Kick
+          {/* Panel footer */}
+          <div className="px-5 py-4 border-t border-[rgba(255,255,255,0.07)] flex flex-col gap-3">
+            {stream.title && <p className="text-[12px] text-[#444] truncate">{stream.title}</p>}
+            <a href={`https://kick.com/${CHANNEL}`} target="_blank" rel="noopener noreferrer">
+              <button className="btn btn-outline w-full text-[13px]">
+                <Play size={12} />
+                Abrir en Kick
+              </button>
             </a>
           </div>
         </motion.div>
       </section>
 
-      {/* ── Features strip ────────────────────── */}
-      <section className="border-t border-white/5 py-16">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-white/5 rounded-2xl overflow-hidden">
+      {/* ── Features ─────────────────────────── */}
+      <section className="py-20 border-t border-[rgba(255,255,255,0.07)]">
+        <div className="max-w-6xl mx-auto px-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-[rgba(255,255,255,0.07)] rounded-xl overflow-hidden">
             {[
-              { icon: Zap,    title: "Sistema de Puntos",  desc: "Gana puntos viendo el stream y en el chat" },
-              { icon: Trophy, title: "Rankings",           desc: "Compite por el top de viewers y chatters" },
-              { icon: Gift,   title: "Sorteos",            desc: "Participa en sorteos exclusivos en tiempo real" },
+              { icon: Zap,    t: "Puntos",   d: "Gana puntos viendo streams y participando en el chat" },
+              { icon: Trophy, t: "Rankings", d: "Compite por ser el top viewer o chatter de la semana" },
+              { icon: Gift,   t: "Sorteos",  d: "Participa en sorteos exclusivos para la comunidad"   },
             ].map((f, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="bg-[#111] px-8 py-10 group hover:bg-[#161616] transition-colors"
-              >
-                <div className="w-10 h-10 rounded-xl bg-[#FF6B00]/10 border border-[#FF6B00]/20 flex items-center justify-center mb-5
-                  group-hover:bg-[#FF6B00]/20 group-hover:border-[#FF6B00]/40 transition-all">
-                  <f.icon size={18} className="text-[#FF6B00]" />
+              <motion.div key={i} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+                className="bg-[#111] px-8 py-10 group hover:bg-[#161616] transition-colors">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center mb-5 transition-all"
+                  style={{ background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.15)" }}>
+                  <f.icon size={16} className="accent group-hover:scale-110 transition-transform" />
                 </div>
-                <h3 className="font-body font-semibold text-white mb-2">{f.title}</h3>
-                <p className="font-body text-sm text-[#555] leading-relaxed">{f.desc}</p>
+                <p className="font-semibold text-white text-[14px] mb-2">{f.t}</p>
+                <p className="text-[13px] text-[#444] leading-relaxed">{f.d}</p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── CTA final ─────────────────────────── */}
-      <section className="py-24">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="max-w-xl mx-auto"
-          >
-            <div className="flex justify-center mb-6 lightning-glow">
-              <LightningIcon size={40} />
-            </div>
-            <h2 className="font-display text-5xl sm:text-6xl tracking-widest text-white mb-4">
-              ÚNETE AHORA
+      {/* ── About ────────────────────────────── */}
+      <section className="py-20">
+        <div className="max-w-6xl mx-auto px-5">
+          <div className="flex flex-col md:flex-row items-center gap-12">
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }} className="flex-shrink-0">
+              <div className="relative">
+                <Image src={AVATAR} alt="Brunenger" width={160} height={160}
+                  className="rounded-2xl border border-[rgba(255,255,255,0.08)]" />
+                <div className="absolute -bottom-2 -right-2 bolt">
+                  <LightningIcon size={28} />
+                </div>
+              </div>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, x: 16 }} whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }} transition={{ delay: 0.1 }}>
+              <div className="label mb-4">Sobre Brunenger</div>
+              <h2 className="display text-[clamp(2.5rem,5vw,4rem)] text-white mb-4 leading-none">
+                STREAMER.<br />
+                <span className="accent glow-text">COMUNIDAD.</span>
+              </h2>
+              <p className="text-[#555] text-[14px] leading-relaxed max-w-lg mb-6">
+                Brunenger es más que un streamer — es una comunidad donde cada viewer importa.
+                Con un sistema de puntos, rankings y sorteos exclusivos, ser parte del canal
+                tiene sus recompensas.
+              </p>
+              <button onClick={login} disabled={loading} className="btn btn-orange text-[13px]">
+                <Zap size={14} />
+                Únete ahora
+              </button>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA final ────────────────────────── */}
+      <section className="py-24 border-t border-[rgba(255,255,255,0.07)]">
+        <div className="max-w-6xl mx-auto px-5 text-center">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <span className="bolt inline-block mb-6"><LightningIcon size={36} /></span>
+            <h2 className="display text-[clamp(3rem,8vw,6rem)] text-white mb-4 leading-none">
+              ÚNETE A LA<br />
+              <span className="accent glow-text">COMUNIDAD</span>
             </h2>
-            <p className="font-body text-[#555] mb-8">
-              Inicia sesión con tu cuenta de Kick y empieza a acumular puntos hoy.
+            <p className="text-[#444] text-[14px] mb-8">
+              Inicia sesión con Kick y empieza a acumular puntos hoy.
             </p>
-            <motion.button
-              onClick={handleLogin}
-              disabled={loading}
-              className="px-10 py-4 rounded-xl btn-primary font-body font-semibold text-base tracking-wide"
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-            >
+            <button onClick={login} disabled={loading} className="btn btn-orange px-8 py-3 text-[14px]">
+              <Zap size={15} />
               {loading ? "Conectando..." : "Iniciar sesión con Kick"}
-            </motion.button>
+            </button>
           </motion.div>
         </div>
       </section>
