@@ -11,19 +11,21 @@ const KICK_REDIRECT_URI = process.env.KICK_REDIRECT_URI || "http://localhost:300
 // POST /api/auth/kick/callback
 // Exchanges authorization code for access token and creates/updates user
 router.post("/kick/callback", async (req, res) => {
-  const { code } = req.body;
+  const { code, codeVerifier } = req.body;
   if (!code) return res.status(400).json({ error: "Código de autorización requerido" });
+  if (!codeVerifier) return res.status(400).json({ error: "code_verifier requerido" });
 
   try {
-    // Exchange code for token
+    // Exchange code for token (PKCE flow)
     const tokenRes = await axios.post(
-      "https://id.kick.com/oauth2/token",
+      "https://id.kick.com/oauth/token",
       new URLSearchParams({
         grant_type: "authorization_code",
         client_id: KICK_CLIENT_ID,
         client_secret: KICK_CLIENT_SECRET,
         redirect_uri: KICK_REDIRECT_URI,
         code,
+        code_verifier: codeVerifier,
       }).toString(),
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
@@ -31,14 +33,17 @@ router.post("/kick/callback", async (req, res) => {
     const { access_token } = tokenRes.data;
 
     // Get user info from Kick API
-    const userRes = await axios.get("https://api.kick.com/public/v1/user", {
-      headers: { Authorization: `Bearer ${access_token}` },
+    const userRes = await axios.get("https://api.kick.com/public/v1/users", {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+        "Client-Id": KICK_CLIENT_ID,
+      },
     });
 
-    const kickUser = userRes.data?.data || userRes.data;
+    const kickUser = userRes.data?.data?.[0] || userRes.data?.data || userRes.data;
     const kickId = String(kickUser.user_id || kickUser.id);
     const username = kickUser.username || kickUser.name;
-    const avatar = kickUser.profile_pic || kickUser.profile_picture || "";
+    const avatar = kickUser.profile_pic || kickUser.profile_picture || kickUser.avatar || "";
 
     // Upsert user in Supabase
     const { data: existingUser, error: fetchErr } = await supabase

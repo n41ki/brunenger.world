@@ -33,9 +33,10 @@ export default function HomePage() {
       .catch(() => setStreamStatus({ isLive: false }));
   }, [router]);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setLoading(true);
-    window.location.href = getKickAuthUrl();
+    const url = await getKickAuthUrl();
+    window.location.href = url;
   };
 
   return (

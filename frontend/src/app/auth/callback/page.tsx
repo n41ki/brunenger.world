@@ -42,15 +42,24 @@ function AuthCallbackContent() {
       return;
     }
 
+    const codeVerifier = sessionStorage.getItem("kick_code_verifier");
+    if (!codeVerifier) {
+      setStatus("error");
+      setMessage("Sesión expirada. Intenta de nuevo.");
+      setTimeout(() => router.push("/"), 3000);
+      return;
+    }
+
     setMessage("Autenticando con Kick...");
 
     axios
-      .post(`${BACKEND_URL}/api/auth/kick/callback`, { code })
+      .post(`${BACKEND_URL}/api/auth/kick/callback`, { code, codeVerifier })
       .then((res) => {
         setAuthToken(res.data.token);
         setStatus("success");
         setMessage("¡Bienvenido a Brunenger World!");
         sessionStorage.removeItem("kick_oauth_state");
+        sessionStorage.removeItem("kick_code_verifier");
         setTimeout(() => router.push("/dashboard"), 1500);
       })
       .catch((err) => {
