@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: brunenger-world-api
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: KICK_CLIENT_ID
+        value: 01KM3MJ0VFDX1762BKS18S3CR5
+      - key: KICK_CLIENT_SECRET
+        sync: false  # Set manually in Render dashboard
+      - key: KICK_REDIRECT_URI
+        sync: false  # Set to your production frontend URL /auth/callback
+      - key: KICK_CHANNEL_SLUG
+        value: brunenger
+      - key: JWT_SECRET
+        sync: false  # Generate a strong random secret
+      - key: SUPABASE_URL
+        sync: false  # Your Supabase project URL
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false  # Your Supabase service role key
+      - key: FRONTEND_URL
+        sync: false  # Your production frontend URL (Vercel/Netlify)
